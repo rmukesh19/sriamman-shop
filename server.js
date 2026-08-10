@@ -1,10 +1,11 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import connectDB from "./backend/config/db.js";
 import app from "./backend/app.js";
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   // Connect to DB asynchronously without blocking server initialization
