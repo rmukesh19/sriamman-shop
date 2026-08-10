@@ -1,0 +1,185 @@
+import fs from "fs";
+import path from "path";
+const DB_DIR = path.join(process.cwd(), "data");
+const DB_PATH = path.join(DB_DIR, "db.json");
+if (!fs.existsSync(DB_DIR)) {
+  fs.mkdirSync(DB_DIR, { recursive: true });
+}
+const INITIAL_DATABASE = {
+  products: [],
+  customers: [],
+  suppliers: [],
+  bills: [],
+  purchases: [],
+  stockAdjustments: [],
+  expenses: [],
+  incomes: [],
+  accountsLedger: [],
+  financialYears: [
+    {
+      id: "fy-2026-27",
+      name: "FY 2026-27",
+      startDate: "2026-04-01",
+      endDate: "2027-03-31",
+      isActive: true
+    }
+  ],
+  users: [
+    {
+      id: "user-admin",
+      username: "admin",
+      passwordHash: "admin123",
+      role: "Admin",
+      fullName: "Sri Amman Admin",
+      status: "Active"
+    }
+  ],
+  employees: [],
+  companySettings: {
+    companyName: "SRI AMMAN TRADERS",
+    gstin: "33AAHFS3829M1Z8",
+    address: "105, bypass Road, Erode, Tamil Nadu - 638001",
+    phone: "9876543210 / 0424-222333",
+    email: "sriammanriceerode@gmail.com",
+    website: "www.sriammanrice.com",
+    theme: "Modern Slate",
+    invoiceDesign: "standard_gst",
+    receiptDesign: "thermal_80mm",
+    smsEnabled: true,
+    whatsappEnabled: true,
+    emailEnabled: false,
+    thermalPrinterWidth: "80mm",
+    invoicePrefix: "SAT-2026-",
+    language: "English",
+    darkMode: false,
+    isInitialized: false
+  },
+  categories: [],
+  brands: [],
+  units: [],
+  godowns: [],
+  gstMasters: [],
+  accountsGroups: [],
+  accountsLedgers: []
+};
+class LocalDB {
+  data;
+  constructor() {
+    this.data = this.load();
+  }
+  load() {
+    if (fs.existsSync(DB_PATH)) {
+      try {
+        const fileContent = fs.readFileSync(DB_PATH, "utf-8");
+        const db = JSON.parse(fileContent);
+        if (!db.accountsGroups) {
+          db.accountsGroups = [];
+        }
+        if (!db.expenses) {
+          db.expenses = [];
+        }
+        if (!db.incomes) {
+          db.incomes = [];
+        }
+        if (!db.financialYears || db.financialYears.length === 0) {
+          db.financialYears = INITIAL_DATABASE.financialYears;
+        }
+        if (!db.employees) {
+          db.employees = INITIAL_DATABASE.employees;
+        }
+        if (!db.categories || db.categories.length === 0) {
+          db.categories = [
+            { id: "cat-1", name: "Ponni Rice", tamilName: "பொன்னி அரிசி", code: "PONNI", status: "Active" },
+            { id: "cat-2", name: "Boiled Rice", tamilName: "புழுங்கல் அரிசி", code: "BOILED", status: "Active" },
+            { id: "cat-3", name: "Raw Rice", tamilName: "பச்சரிசி", code: "RAW", status: "Active" },
+            { id: "cat-4", name: "Idli Rice", tamilName: "இட்லி அரிசி", code: "IDLI", status: "Active" },
+            { id: "cat-5", name: "Basmati Rice", tamilName: "பாஸ்மதி அரிசி", code: "BASMATI", status: "Active" }
+          ];
+        }
+        if (!db.brands || db.brands.length === 0) {
+          db.brands = [
+            { id: "br-1", name: "Sri Amman Gold", tamilName: "ஸ்ரீ அம்மன் கோல்ட்", status: "Active" },
+            { id: "br-2", name: "Double Deer", tamilName: "டபுள் டீர்", status: "Active" },
+            { id: "br-3", name: "Royal Harvest", tamilName: "ராயல் ஹார்வெஸ்ட்", status: "Active" }
+          ];
+        }
+        if (!db.units || db.units.length === 0) {
+          db.units = [
+            { id: "un-1", name: "25kg Bag", tamilName: "25கிலோ சிப்பம்", code: "25KG", status: "Active" },
+            { id: "un-2", name: "50kg Bag", tamilName: "50கிலோ மூட்டை", code: "50KG", status: "Active" },
+            { id: "un-3", name: "10kg Bag", tamilName: "10கிலோ பை", code: "10KG", status: "Active" },
+            { id: "un-4", name: "5kg Bag", tamilName: "5கிலோ பை", code: "5KG", status: "Active" },
+            { id: "un-5", name: "1kg Loose", tamilName: "1கிலோ சில்லறை", code: "1KG", status: "Active" },
+            { id: "un-6", name: "Bags", tamilName: "மூட்டைகள்", code: "BAGS", status: "Active" },
+            { id: "un-7", name: "Kg", tamilName: "கிலோ", code: "KG", status: "Active" },
+            { id: "un-8", name: "Pack", tamilName: "பாக்கெட்", "code": "PACK", status: "Active" }
+          ];
+        }
+        if (!db.godowns || db.godowns.length === 0) {
+          db.godowns = [
+            { id: "god-1", name: "Main Erode Godown", tamilName: "ஈரோடு முதன்மை கிடங்கு", address: "Bypass Road, Erode", status: "Active" },
+            { id: "god-2", name: "Mill Yard Warehouse", tamilName: "ஆலை வளாக கிடங்கு", address: "Mill Road, Erode", status: "Active" }
+          ];
+        }
+        if (!db.paymentTypes || db.paymentTypes.length === 0) {
+          db.paymentTypes = [
+            { id: "pay-1", name: "Cash", tamilName: "ரொக்கம்", status: "Active" },
+            { id: "pay-2", name: "UPI / GPay / PhonePe", tamilName: "யுபிஐ / ஜிபே", status: "Active" },
+            { id: "pay-3", name: "Card (Credit/Debit)", tamilName: "கார்டு", status: "Active" },
+            { id: "pay-4", name: "Net Banking", tamilName: "நெட் பேங்கிங்", status: "Active" },
+            { id: "pay-5", name: "Credit Account", tamilName: "கடன் கணக்கு", status: "Active" },
+            { id: "pay-6", name: "Cheque / DD", tamilName: "காசோலை", status: "Active" }
+          ];
+        }
+        if (!db.gstMasters) {
+          db.gstMasters = INITIAL_DATABASE.gstMasters;
+        }
+        if (db.companySettings) {
+          db.companySettings = {
+            ...INITIAL_DATABASE.companySettings,
+            ...db.companySettings
+          };
+        } else {
+          db.companySettings = INITIAL_DATABASE.companySettings;
+        }
+        return db;
+      } catch (err) {
+        console.error("Error reading database, resetting to seed data", err);
+        this.saveData(INITIAL_DATABASE);
+        return INITIAL_DATABASE;
+      }
+    } else {
+      this.saveData(INITIAL_DATABASE);
+      return INITIAL_DATABASE;
+    }
+  }
+  saveData(data) {
+    try {
+      fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf-8");
+    } catch (err) {
+      console.error("Error writing database", err);
+    }
+  }
+  get() {
+    return this.data;
+  }
+  save(newData) {
+    this.data = newData;
+    this.saveData(newData);
+  }
+  // Auto incremental helper
+  nextInvoiceNo() {
+    const activeBills = this.data.bills;
+    const count = activeBills.length + 1;
+    const year = (/* @__PURE__ */ new Date()).getFullYear();
+    return `${this.data.companySettings.invoicePrefix}${year}-${String(count).padStart(3, "0")}`;
+  }
+  nextPurchaseNo() {
+    const count = this.data.purchases.length + 1;
+    return `PUR-2026-${String(count).padStart(3, "0")}`;
+  }
+}
+const dbInstance = new LocalDB();
+export {
+  dbInstance
+};

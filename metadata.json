@@ -1,0 +1,6 @@
+{
+  "name": "Sri Amman Traders Rice Shop Billing Software",
+  "description": "Billing Software for Sri Amman Traders Rice Shop, featuring bilingual English and Tamil support, fast POS billing, inventory tracking, accounts, and offline synchronization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
