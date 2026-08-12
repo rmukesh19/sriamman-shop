@@ -1028,19 +1028,24 @@ const Masters = ({
                       type="text" 
                       required 
                       value={pEngName} 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setPEngName(val);
-                        if (!pTamName || pTamName === transliterateEnglishToTamil(pEngName)) {
-                          setPTamName(transliterateEnglishToTamil(val));
-                        }
-                      }} 
-                      placeholder="e.g. Ponni Rice"
+                      onChange={(e) => setPEngName(e.target.value)} 
+                      placeholder="e.g. PONNI RICE"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                      <span>பெயர் (தமிழ்)</span>
+                      {!pTamName && pEngName && (
+                        <button 
+                          type="button" 
+                          onClick={() => setPTamName(transliterateEnglishToTamil(pEngName))}
+                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                        >
+                          (auto-fill tamil)
+                        </button>
+                      )}
+                    </label>
                     <input 
                       type="text" 
                       value={pTamName} 
@@ -1130,19 +1135,24 @@ const Masters = ({
                       type="text" 
                       required 
                       value={csName} 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCsName(val);
-                        if (!csTamilName || csTamilName === transliterateEnglishToTamil(csName)) {
-                          setCsTamilName(transliterateEnglishToTamil(val));
-                        }
-                      }} 
-                      placeholder="e.g. Kannan"
+                      onChange={(e) => setCsName(e.target.value)} 
+                      placeholder="e.g. KANNAN"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                      <span>பெயர் (தமிழ்)</span>
+                      {!csTamilName && csName && (
+                        <button 
+                          type="button" 
+                          onClick={() => setCsTamilName(transliterateEnglishToTamil(csName))}
+                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                        >
+                          (auto-fill tamil)
+                        </button>
+                      )}
+                    </label>
                     <input 
                       type="text" 
                       value={csTamilName} 
@@ -1232,18 +1242,24 @@ const Masters = ({
                       type="text" 
                       required 
                       value={gdName} 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setGdName(val);
-                        if (!gdTamil || gdTamil === transliterateEnglishToTamil(gdName)) {
-                          setGdTamil(transliterateEnglishToTamil(val));
-                        }
-                      }} 
+                      onChange={(e) => setGdName(e.target.value)} 
+                      placeholder="e.g. MAIN GODOWN ERODE"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                      <span>பெயர் (தமிழ்)</span>
+                      {!gdTamil && gdName && (
+                        <button 
+                          type="button" 
+                          onClick={() => setGdTamil(transliterateEnglishToTamil(gdName))}
+                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                        >
+                          (auto-fill tamil)
+                        </button>
+                      )}
+                    </label>
                     <input 
                       type="text" 
                       value={gdTamil} 
@@ -1280,18 +1296,24 @@ const Masters = ({
                       type="text" 
                       required 
                       value={mName} 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setMName(val);
-                        if (!mTamilName || mTamilName === transliterateEnglishToTamil(mName)) {
-                          setMTamilName(transliterateEnglishToTamil(val));
-                        }
-                      }} 
+                      onChange={(e) => setMName(e.target.value)} 
+                      placeholder="e.g. BOILED RICE"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                      <span>பெயர் (தமிழ்)</span>
+                      {!mTamilName && mName && (
+                        <button 
+                          type="button" 
+                          onClick={() => setMTamilName(transliterateEnglishToTamil(mName))}
+                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                        >
+                          (auto-fill tamil)
+                        </button>
+                      )}
+                    </label>
                     <input 
                       type="text" 
                       value={mTamilName} 
