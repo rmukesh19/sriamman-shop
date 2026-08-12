@@ -4,7 +4,6 @@
   "suppliers": [],
   "bills": [],
   "purchases": [],
-  "purchaseReturns": [],
   "stockAdjustments": [],
   "expenses": [],
   "incomes": [],
@@ -82,27 +81,7 @@
     { "id": "pay-5", "name": "Credit Account", "tamilName": "கடன் கணக்கு", "status": "Active" },
     { "id": "pay-6", "name": "Cheque / DD", "tamilName": "காசோலை", "status": "Active" }
   ],
-  "gstMasters": [
-    { "id": "gst-1", "rate": 0, "description": "Exempt / Nil Rated", "status": "Active" },
-    { "id": "gst-2", "rate": 5, "description": "5% GST (Standard Branded Food Grains)", "status": "Active" },
-    { "id": "gst-3", "rate": 12, "description": "12% GST", "status": "Active" },
-    { "id": "gst-4", "rate": 18, "description": "18% GST (Services / Machinery)", "status": "Active" }
-  ],
-  "accountsGroups": [
-    { "id": "gp-cash", "name": "Cash-in-hand", "nature": "Asset" },
-    { "id": "gp-bank", "name": "Bank Accounts", "nature": "Asset" },
-    { "id": "gp-dir-income", "name": "Direct Income", "nature": "Income" },
-    { "id": "gp-indir-income", "name": "Indirect Income", "nature": "Income" },
-    { "id": "gp-dir-expense", "name": "Direct Expense", "nature": "Expense" },
-    { "id": "gp-indir-expense", "name": "Indirect Expense", "nature": "Expense" }
-  ],
-  "accountsLedgers": [
-    { "id": "ld-cash", "name": "Cash Account", "groupId": "gp-cash", "openingBalance": 0, "currentBalance": 0, "status": "Active" },
-    { "id": "ld-bank", "name": "SBI Bank Account", "groupId": "gp-bank", "openingBalance": 0, "currentBalance": 0, "status": "Active" },
-    { "id": "ld-sales", "name": "Sales Account", "groupId": "gp-dir-income", "openingBalance": 0, "currentBalance": 0, "status": "Active" },
-    { "id": "ld-purchase", "name": "Purchase Account", "groupId": "gp-dir-expense", "openingBalance": 0, "currentBalance": 0, "status": "Active" },
-    { "id": "ld-rent", "name": "Rent Expense", "groupId": "gp-indir-expense", "openingBalance": 0, "currentBalance": 0, "status": "Active" },
-    { "id": "ld-electricity", "name": "Electricity Expense", "groupId": "gp-indir-expense", "openingBalance": 0, "currentBalance": 0, "status": "Active" }
-  ],
-  "reports": []
+  "gstMasters": [],
+  "accountsGroups": [],
+  "accountsLedgers": []
 }

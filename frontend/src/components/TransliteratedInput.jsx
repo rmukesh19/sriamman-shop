@@ -1,8 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { transliterateEnglishToTamil } from "../utils/transliterate";
 
 export const TransliteratedInput = ({ value = "", onChange, ...props }) => {
-  const [active, setActive] = useState(true);
+  const [active, setActive] = useState(() => {
+    const saved = localStorage.getItem("sri_amman_tamil_typing");
+    return saved === "true";
+  });
+
+  useEffect(() => {
+    const handleToggle = () => {
+      const saved = localStorage.getItem("sri_amman_tamil_typing");
+      setActive(saved === "true");
+    };
+    window.addEventListener("sri_amman_transliteration_toggle", handleToggle);
+    window.addEventListener("storage", handleToggle);
+    return () => {
+      window.removeEventListener("sri_amman_transliteration_toggle", handleToggle);
+      window.removeEventListener("storage", handleToggle);
+    };
+  }, []);
+
+  const toggleActive = () => {
+    const nextState = !active;
+    setActive(nextState);
+    localStorage.setItem("sri_amman_tamil_typing", String(nextState));
+    window.dispatchEvent(new Event("sri_amman_transliteration_toggle"));
+  };
 
   const handleChange = (e) => {
     const rawVal = e.target.value;
@@ -30,7 +53,7 @@ export const TransliteratedInput = ({ value = "", onChange, ...props }) => {
       <button
         type="button"
         tabIndex={-1}
-        onClick={() => setActive(!active)}
+        onClick={toggleActive}
         title={active ? "Tamil Transliteration Active" : "English Only"}
         className={`absolute right-1.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[9px] font-black rounded select-none border transition-colors cursor-pointer ${
           active
@@ -45,7 +68,30 @@ export const TransliteratedInput = ({ value = "", onChange, ...props }) => {
 };
 
 export const TransliteratedTextArea = ({ value = "", onChange, ...props }) => {
-  const [active, setActive] = useState(true);
+  const [active, setActive] = useState(() => {
+    const saved = localStorage.getItem("sri_amman_tamil_typing");
+    return saved === "true";
+  });
+
+  useEffect(() => {
+    const handleToggle = () => {
+      const saved = localStorage.getItem("sri_amman_tamil_typing");
+      setActive(saved === "true");
+    };
+    window.addEventListener("sri_amman_transliteration_toggle", handleToggle);
+    window.addEventListener("storage", handleToggle);
+    return () => {
+      window.removeEventListener("sri_amman_transliteration_toggle", handleToggle);
+      window.removeEventListener("storage", handleToggle);
+    };
+  }, []);
+
+  const toggleActive = () => {
+    const nextState = !active;
+    setActive(nextState);
+    localStorage.setItem("sri_amman_tamil_typing", String(nextState));
+    window.dispatchEvent(new Event("sri_amman_transliteration_toggle"));
+  };
 
   const handleChange = (e) => {
     const rawVal = e.target.value;
@@ -73,7 +119,7 @@ export const TransliteratedTextArea = ({ value = "", onChange, ...props }) => {
       <button
         type="button"
         tabIndex={-1}
-        onClick={() => setActive(!active)}
+        onClick={toggleActive}
         title={active ? "Tamil Transliteration Active" : "English Only"}
         className={`absolute right-1.5 top-2 px-1.5 py-0.5 text-[9px] font-black rounded select-none border transition-colors cursor-pointer ${
           active

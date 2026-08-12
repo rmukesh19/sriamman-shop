@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
+import { transliterateEnglishToTamil } from "../utils/transliterate";
 import {
   Plus,
   Search,
@@ -1023,11 +1024,30 @@ const Masters = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">English Name</label>
-                    <input type="text" required value={pEngName} onChange={(e) => setPEngName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={pEngName} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPEngName(val);
+                        if (!pTamName || pTamName === transliterateEnglishToTamil(pEngName)) {
+                          setPTamName(transliterateEnglishToTamil(val));
+                        }
+                      }} 
+                      placeholder="e.g. Ponni Rice"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
+                    />
                   </div>
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
-                    <input type="text" value={pTamName} onChange={(e) => setPTamName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input 
+                      type="text" 
+                      value={pTamName} 
+                      onChange={(e) => setPTamName(transliterateEnglishToTamil(e.target.value))} 
+                      placeholder="Phonetic (e.g. ponni)"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
+                    />
                   </div>
                 </div>
 
@@ -1106,11 +1126,30 @@ const Masters = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Customer Name (English)</label>
-                    <input type="text" required value={csName} onChange={(e) => setCsName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={csName} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCsName(val);
+                        if (!csTamilName || csTamilName === transliterateEnglishToTamil(csName)) {
+                          setCsTamilName(transliterateEnglishToTamil(val));
+                        }
+                      }} 
+                      placeholder="e.g. Kannan"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
+                    />
                   </div>
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
-                    <input type="text" value={csTamilName} onChange={(e) => setCsTamilName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input 
+                      type="text" 
+                      value={csTamilName} 
+                      onChange={(e) => setCsTamilName(transliterateEnglishToTamil(e.target.value))} 
+                      placeholder="Phonetic (e.g. kannan)"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
+                    />
                   </div>
                 </div>
 
@@ -1189,11 +1228,28 @@ const Masters = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Godown Storage Name</label>
-                    <input type="text" required value={gdName} onChange={(e) => setGdName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={gdName} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setGdName(val);
+                        if (!gdTamil || gdTamil === transliterateEnglishToTamil(gdName)) {
+                          setGdTamil(transliterateEnglishToTamil(val));
+                        }
+                      }} 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
+                    />
                   </div>
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
-                    <input type="text" value={gdTamil} onChange={(e) => setGdTamil(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input 
+                      type="text" 
+                      value={gdTamil} 
+                      onChange={(e) => setGdTamil(transliterateEnglishToTamil(e.target.value))} 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
+                    />
                   </div>
                 </div>
 
@@ -1220,11 +1276,28 @@ const Masters = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Entry Name (English)</label>
-                    <input type="text" required value={mName} onChange={(e) => setMName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={mName} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMName(val);
+                        if (!mTamilName || mTamilName === transliterateEnglishToTamil(mName)) {
+                          setMTamilName(transliterateEnglishToTamil(val));
+                        }
+                      }} 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
+                    />
                   </div>
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
-                    <input type="text" value={mTamilName} onChange={(e) => setMTamilName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input 
+                      type="text" 
+                      value={mTamilName} 
+                      onChange={(e) => setMTamilName(transliterateEnglishToTamil(e.target.value))} 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
+                    />
                   </div>
                 </div>
 

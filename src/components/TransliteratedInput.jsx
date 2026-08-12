@@ -4,7 +4,7 @@ import { transliterateEnglishToTamil } from "../utils/transliterate";
 export const TransliteratedInput = ({ value = "", onChange, ...props }) => {
   const [active, setActive] = useState(() => {
     const saved = localStorage.getItem("sri_amman_tamil_typing");
-    return saved === null ? true : saved === "true";
+    return saved === "true";
   });
 
   useEffect(() => {
