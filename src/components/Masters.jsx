@@ -1029,20 +1029,20 @@ const Masters = ({
                       required 
                       value={pEngName} 
                       onChange={(e) => setPEngName(e.target.value)} 
-                      placeholder="e.g. PONNI RICE"
+                      placeholder="e.g. Ponni Rice"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
                       <span>பெயர் (தமிழ்)</span>
-                      {!pTamName && pEngName && (
+                      {pEngName && (
                         <button 
                           type="button" 
-                          onClick={() => setPTamName(transliterateEnglishToTamil(pEngName))}
-                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                          onClick={() => setPTamName(transliterateEnglishToTamil(pEngName))} 
+                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
                         >
-                          (auto-fill tamil)
+                          Auto-Fill
                         </button>
                       )}
                     </label>
@@ -1136,20 +1136,20 @@ const Masters = ({
                       required 
                       value={csName} 
                       onChange={(e) => setCsName(e.target.value)} 
-                      placeholder="e.g. KANNAN"
+                      placeholder="e.g. Kannan"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
                       <span>பெயர் (தமிழ்)</span>
-                      {!csTamilName && csName && (
+                      {csName && (
                         <button 
                           type="button" 
-                          onClick={() => setCsTamilName(transliterateEnglishToTamil(csName))}
-                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                          onClick={() => setCsTamilName(transliterateEnglishToTamil(csName))} 
+                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
                         >
-                          (auto-fill tamil)
+                          Auto-Fill
                         </button>
                       )}
                     </label>
@@ -1243,20 +1243,19 @@ const Masters = ({
                       required 
                       value={gdName} 
                       onChange={(e) => setGdName(e.target.value)} 
-                      placeholder="e.g. MAIN GODOWN ERODE"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
                       <span>பெயர் (தமிழ்)</span>
-                      {!gdTamil && gdName && (
+                      {gdName && (
                         <button 
                           type="button" 
-                          onClick={() => setGdTamil(transliterateEnglishToTamil(gdName))}
-                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                          onClick={() => setGdTamil(transliterateEnglishToTamil(gdName))} 
+                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
                         >
-                          (auto-fill tamil)
+                          Auto-Fill
                         </button>
                       )}
                     </label>
@@ -1297,20 +1296,19 @@ const Masters = ({
                       required 
                       value={mName} 
                       onChange={(e) => setMName(e.target.value)} 
-                      placeholder="e.g. BOILED RICE"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex items-center justify-between">
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
                       <span>பெயர் (தமிழ்)</span>
-                      {!mTamilName && mName && (
+                      {mName && (
                         <button 
                           type="button" 
-                          onClick={() => setMTamilName(transliterateEnglishToTamil(mName))}
-                          className="text-[8px] text-blue-600 font-bold hover:underline cursor-pointer lowercase"
+                          onClick={() => setMTamilName(transliterateEnglishToTamil(mName))} 
+                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
                         >
-                          (auto-fill tamil)
+                          Auto-Fill
                         </button>
                       )}
                     </label>
