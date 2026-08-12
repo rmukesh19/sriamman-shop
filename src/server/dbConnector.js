@@ -228,9 +228,10 @@ const MongoAccountsLedger = mongoose.model("AccountsLedger", AccountsLedgerSchem
 // ==========================================
 
 const createFallbackWrapper = (collectionName, mongoModel) => {
+  const checkMongo = () => mongoose.connection.readyState === 1 || isMongoConnected;
   return {
     find: async (query = {}) => {
-      if (isMongoConnected) {
+      if (checkMongo()) {
         return await mongoModel.find(query).lean();
       } else {
         const db = dbInstance.get();
@@ -248,7 +249,7 @@ const createFallbackWrapper = (collectionName, mongoModel) => {
       }
     },
     findOne: async (query = {}) => {
-      if (isMongoConnected) {
+      if (mongoose.connection.readyState === 1 || isMongoConnected) {
         return await mongoModel.findOne(query).lean();
       } else {
         const db = dbInstance.get();
@@ -262,7 +263,7 @@ const createFallbackWrapper = (collectionName, mongoModel) => {
       }
     },
     findById: async (id) => {
-      if (isMongoConnected) {
+      if (mongoose.connection.readyState === 1 || isMongoConnected) {
         return await mongoModel.findById(id).lean();
       } else {
         const db = dbInstance.get();
@@ -271,7 +272,7 @@ const createFallbackWrapper = (collectionName, mongoModel) => {
       }
     },
     create: async (data) => {
-      if (isMongoConnected) {
+      if (mongoose.connection.readyState === 1 || isMongoConnected) {
         const newDoc = new mongoModel(data);
         return await newDoc.save();
       } else {
@@ -284,7 +285,7 @@ const createFallbackWrapper = (collectionName, mongoModel) => {
       }
     },
     findByIdAndUpdate: async (id, updateData) => {
-      if (isMongoConnected) {
+      if (mongoose.connection.readyState === 1 || isMongoConnected) {
         return await mongoModel.findByIdAndUpdate(id, updateData, { new: true }).lean();
       } else {
         const db = dbInstance.get();
@@ -300,7 +301,7 @@ const createFallbackWrapper = (collectionName, mongoModel) => {
       }
     },
     findByIdAndDelete: async (id) => {
-      if (isMongoConnected) {
+      if (mongoose.connection.readyState === 1 || isMongoConnected) {
         return await mongoModel.findByIdAndDelete(id).lean();
       } else {
         const db = dbInstance.get();
@@ -316,7 +317,7 @@ const createFallbackWrapper = (collectionName, mongoModel) => {
       }
     },
     deleteOne: async (query = {}) => {
-      if (isMongoConnected) {
+      if (mongoose.connection.readyState === 1 || isMongoConnected) {
         return await mongoModel.deleteOne(query);
       } else {
         const db = dbInstance.get();

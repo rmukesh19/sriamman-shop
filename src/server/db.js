@@ -129,6 +129,7 @@ class LocalDB {
     }
   }
   get() {
+    this.data = this.load();
     return this.data;
   }
   save(newData) {
