@@ -21,7 +21,7 @@ import {
   Eye
 } from "lucide-react";
 
-const Masters = ({
+export const Masters = ({
   products: _products = [],
   bills: _bills = [],
   onAddProduct,
@@ -149,7 +149,6 @@ const Masters = ({
 
   useEffect(() => {
     if (activeMasterProp) {
-      // Map menu tab key to activeMaster
       if (activeMasterProp === "payment" || activeMasterProp === "paymentTypes") {
         setActiveMaster("paymentTypes");
       } else {
@@ -341,7 +340,6 @@ const Masters = ({
     setShowAddModal(false);
   };
 
-  // Generic Submit Handler for Categories, Brands, Units, Payment Types
   const handleGenericMasterSubmit = async (e) => {
     e.preventDefault();
     let endpoint = "";
@@ -380,7 +378,6 @@ const Masters = ({
     setShowAddModal(false);
   };
 
-  // Start Edit functions
   const startEditProduct = (p) => {
     setEditingId(p.id);
     setPEngName(p.englishName);
@@ -441,46 +438,20 @@ const Masters = ({
     setShowAddModal(true);
   };
 
-  // Delete Executor
-  const executeDelete = async () => {
-    if (!confirmDeleteId || !confirmDeleteType) return;
-    const id = confirmDeleteId;
-    const type = confirmDeleteType;
+  const masterTabConfig = [
+    { id: "products", label: "Rice Products", labelTamil: "அரிசி பொருட்கள்", icon: Package },
+    { id: "categories", label: "Categories", labelTamil: "வகைகள்", icon: FolderTree },
+    { id: "brands", label: "Brands", labelTamil: "பிராண்டுகள்", icon: Star },
+    { id: "units", label: "Units & Bag Sizes", labelTamil: "அளவு / பைகள்", icon: Tag },
+    { id: "customers", label: "Customers", labelTamil: "வாடிக்கையாளர்கள்", icon: Users },
+    { id: "suppliers", label: "Suppliers & Mills", labelTamil: "ஆலையாளர்கள்", icon: Building },
+    { id: "godowns", label: "Godowns", labelTamil: "கிடங்குகள்", icon: Home },
+    { id: "paymentTypes", label: "Payment Types", labelTamil: "பணமுறை", icon: CreditCard }
+  ];
 
-    try {
-      if (type === "product") {
-        if (onDeleteProduct) await onDeleteProduct(id);
-        showToast("Product deleted successfully!");
-      } else if (type === "customer") {
-        if (onDeleteCustomer) await onDeleteCustomer(id);
-        showToast("Customer deleted successfully!");
-      } else if (type === "supplier") {
-        if (onDeleteSupplier) await onDeleteSupplier(id);
-        showToast("Supplier deleted successfully!");
-      } else {
-        let endpoint = `/api/${type}/${id}`;
-        if (type === "paymentTypes") endpoint = `/api/payment-types/${id}`;
-        const res = await fetch(endpoint, { method: "DELETE" });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          showToast("Master entry deleted successfully!");
-          loadCustomMasters();
-        } else {
-          showToast(data.message || "Cannot delete this record because it is used in transactions.", "error");
-        }
-      }
-      if (loadAllData) await loadAllData();
-    } catch (err) {
-      console.error("Delete failed", err);
-      showToast("Deletion failed or record is referenced in transactions.", "error");
-    } finally {
-      setConfirmDeleteId(null);
-      setConfirmDeleteType(null);
-      setConfirmDeleteName("");
-    }
-  };
+  const currentMasterObj = masterTabConfig.find(m => m.id === activeMaster) || masterTabConfig[0];
+  const ActiveIcon = currentMasterObj.icon;
 
-  // Filtering lists
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase();
     return p.englishName.toLowerCase().includes(q) || (p.tamilName || "").toLowerCase().includes(q) || (p.productCode || "").toLowerCase().includes(q);
@@ -521,20 +492,6 @@ const Masters = ({
     return (p.name || "").toLowerCase().includes(q) || (p.tamilName || "").toLowerCase().includes(q);
   });
 
-  const masterTabConfig = [
-    { id: "products", label: "Rice Products", labelTamil: "அரிசி பொருட்கள்", icon: Package },
-    { id: "categories", label: "Categories", labelTamil: "வகைகள்", icon: FolderTree },
-    { id: "brands", label: "Brands", labelTamil: "பிராண்டுகள்", icon: Star },
-    { id: "units", label: "Units & Bag Sizes", labelTamil: "அளவு / பைகள்", icon: Tag },
-    { id: "customers", label: "Customers", labelTamil: "வாடிக்கையாளர்கள்", icon: Users },
-    { id: "suppliers", label: "Suppliers & Mills", labelTamil: "ஆலையாளர்கள்", icon: Building },
-    { id: "godowns", label: "Godowns", labelTamil: "கிடங்குகள்", icon: Home },
-    { id: "paymentTypes", label: "Payment Types", labelTamil: "பணமுறை", icon: CreditCard }
-  ];
-
-  const currentMasterObj = masterTabConfig.find(m => m.id === activeMaster) || masterTabConfig[0];
-  const ActiveIcon = currentMasterObj.icon;
-
   return (
     <div id="masters-workspace-root" className="space-y-5 select-none font-semibold text-slate-800">
       
@@ -566,6 +523,7 @@ const Masters = ({
             <input
               type="text"
               value={searchQuery}
+              data-no-transliterate="true"
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Search in ${currentMasterObj.label}...`}
               className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 text-xs font-bold text-slate-800"
@@ -584,7 +542,7 @@ const Masters = ({
         </div>
       </div>
 
-      {/* ==================== 1. PRODUCTS TABLE VIEW ==================== */}
+      {/* PRODUCTS VIEW */}
       {activeMaster === "products" && (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
@@ -660,7 +618,7 @@ const Masters = ({
         </div>
       )}
 
-      {/* ==================== 2. CUSTOMERS VIEW ==================== */}
+      {/* CUSTOMERS VIEW */}
       {activeMaster === "customers" && (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
@@ -715,292 +673,7 @@ const Masters = ({
         </div>
       )}
 
-      {/* ==================== 3. SUPPLIERS VIEW ==================== */}
-      {activeMaster === "suppliers" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-[9px] tracking-wider border-b border-slate-150">
-                <tr>
-                  <th className="p-3">Supplier / Mill Agent</th>
-                  <th className="p-3">Phone</th>
-                  <th className="p-3">Company / Address</th>
-                  <th className="p-3 text-right">Outstanding (₹)</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-center w-24">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredSuppliers.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="p-6 text-center text-slate-400 uppercase font-black">No suppliers found.</td>
-                  </tr>
-                ) : (
-                  filteredSuppliers.map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3">
-                        <p className="font-black text-slate-900 text-[11px] uppercase">{s.name}</p>
-                      </td>
-                      <td className="p-3 font-mono">{s.phone || "N/A"}</td>
-                      <td className="p-3 uppercase text-[11px] text-slate-500 max-w-xs truncate">{s.companyName || s.address || "-"}</td>
-                      <td className="p-3 text-right font-mono text-rose-600 font-black">₹{(s.outstanding || 0).toLocaleString("en-IN")}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-[5px] text-[8px] font-black uppercase border ${s.status !== "Inactive" ? "bg-emerald-500 text-white border-emerald-500" : "bg-slate-200 text-slate-500 border-slate-300"}`}>
-                          {s.status || "Active"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center flex items-center justify-center gap-1.5 h-14">
-                        <button onClick={() => { setViewingItem(s); setViewingType("supplier"); }} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer" title="View Details">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => startEditSupplier(s)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer" title="Edit">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setConfirmDeleteId(s.id); setConfirmDeleteType("supplier"); setConfirmDeleteName(s.name); }} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer" title="Delete">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== 4. GODOWNS VIEW ==================== */}
-      {activeMaster === "godowns" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-[9px] tracking-wider border-b border-slate-150">
-                <tr>
-                  <th className="p-3">Godown Name</th>
-                  <th className="p-3">பெயர் (தமிழ்)</th>
-                  <th className="p-3">Address Location</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-center w-24">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredGodowns.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="p-6 text-center text-slate-400 uppercase font-black">No godown locations found.</td>
-                  </tr>
-                ) : (
-                  filteredGodowns.map((g) => (
-                    <tr key={g.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 text-[11px] font-black uppercase text-slate-900">{g.name}</td>
-                      <td className="p-3 text-[11px] text-slate-600">{g.tamilName || "-"}</td>
-                      <td className="p-3 text-[11px] text-slate-500 uppercase">{g.address || "-"}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-[5px] text-[8px] font-black uppercase border ${g.status !== "Inactive" ? "bg-emerald-500 text-white border-emerald-500" : "bg-slate-200 text-slate-500 border-slate-300"}`}>
-                          {g.status || "Active"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center flex items-center justify-center gap-1.5 h-14">
-                        <button onClick={() => startEditGodown(g)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setConfirmDeleteId(g.id); setConfirmDeleteType("godowns"); setConfirmDeleteName(g.name); }} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== 5. CATEGORIES VIEW ==================== */}
-      {activeMaster === "categories" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-[9px] tracking-wider border-b border-slate-150">
-                <tr>
-                  <th className="p-3">Category Name</th>
-                  <th className="p-3">பெயர் (தமிழ்)</th>
-                  <th className="p-3">Code</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-center w-24">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredCategories.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="p-6 text-center text-slate-400 uppercase font-black">No categories found.</td>
-                  </tr>
-                ) : (
-                  filteredCategories.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-black text-slate-900 uppercase">{item.name}</td>
-                      <td className="p-3 text-slate-600">{item.tamilName || "-"}</td>
-                      <td className="p-3 font-mono text-slate-500">{item.code || "-"}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-[5px] text-[8px] font-black uppercase border ${item.status !== "Inactive" ? "bg-emerald-500 text-white border-emerald-500" : "bg-slate-200 text-slate-500 border-slate-300"}`}>
-                          {item.status || "Active"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center flex items-center justify-center gap-1.5 h-14">
-                        <button onClick={() => startEditGeneric(item)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setConfirmDeleteId(item.id); setConfirmDeleteType("categories"); setConfirmDeleteName(item.name); }} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== 6. BRANDS VIEW ==================== */}
-      {activeMaster === "brands" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-[9px] tracking-wider border-b border-slate-150">
-                <tr>
-                  <th className="p-3">Brand Name</th>
-                  <th className="p-3">பெயர் (தமிழ்)</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-center w-24">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredBrands.length === 0 ? (
-                  <tr>
-                    <td colSpan="4" className="p-6 text-center text-slate-400 uppercase font-black">No brands found.</td>
-                  </tr>
-                ) : (
-                  filteredBrands.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-black text-slate-900 uppercase">{item.name}</td>
-                      <td className="p-3 text-slate-600">{item.tamilName || "-"}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-[5px] text-[8px] font-black uppercase border ${item.status !== "Inactive" ? "bg-emerald-500 text-white border-emerald-500" : "bg-slate-200 text-slate-500 border-slate-300"}`}>
-                          {item.status || "Active"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center flex items-center justify-center gap-1.5 h-14">
-                        <button onClick={() => startEditGeneric(item)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setConfirmDeleteId(item.id); setConfirmDeleteType("brands"); setConfirmDeleteName(item.name); }} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== 7. UNITS VIEW ==================== */}
-      {activeMaster === "units" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-[9px] tracking-wider border-b border-slate-150">
-                <tr>
-                  <th className="p-3">Unit / Packing Name</th>
-                  <th className="p-3">பெயர் (தமிழ்)</th>
-                  <th className="p-3">Unit Code</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-center w-24">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredUnits.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="p-6 text-center text-slate-400 uppercase font-black">No units found.</td>
-                  </tr>
-                ) : (
-                  filteredUnits.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-black text-slate-900 uppercase">{item.name}</td>
-                      <td className="p-3 text-slate-600">{item.tamilName || "-"}</td>
-                      <td className="p-3 font-mono text-slate-500">{item.code || "-"}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-[5px] text-[8px] font-black uppercase border ${item.status !== "Inactive" ? "bg-emerald-500 text-white border-emerald-500" : "bg-slate-200 text-slate-500 border-slate-300"}`}>
-                          {item.status || "Active"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center flex items-center justify-center gap-1.5 h-14">
-                        <button onClick={() => startEditGeneric(item)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setConfirmDeleteId(item.id); setConfirmDeleteType("units"); setConfirmDeleteName(item.name); }} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== 8. PAYMENT TYPES VIEW ==================== */}
-      {activeMaster === "paymentTypes" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-[9px] tracking-wider border-b border-slate-150">
-                <tr>
-                  <th className="p-3">Payment Method Name</th>
-                  <th className="p-3">பெயர் (தமிழ்)</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-center w-24">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredPaymentTypes.length === 0 ? (
-                  <tr>
-                    <td colSpan="4" className="p-6 text-center text-slate-400 uppercase font-black">No payment types found.</td>
-                  </tr>
-                ) : (
-                  filteredPaymentTypes.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-black text-slate-900 uppercase">{item.name}</td>
-                      <td className="p-3 text-slate-600">{item.tamilName || "-"}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-[5px] text-[8px] font-black uppercase border ${item.status !== "Inactive" ? "bg-emerald-500 text-white border-emerald-500" : "bg-slate-200 text-slate-500 border-slate-300"}`}>
-                          {item.status || "Active"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center flex items-center justify-center gap-1.5 h-14">
-                        <button onClick={() => startEditGeneric(item)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setConfirmDeleteId(item.id); setConfirmDeleteType("paymentTypes"); setConfirmDeleteName(item.name); }} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* --- CREATE / EDIT MASTER MODAL --- */}
+      {/* CREATE / EDIT MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl relative border border-slate-100 my-8">
@@ -1018,7 +691,7 @@ const Masters = ({
               {editingId ? "Modify Master Record" : "Create Master Record"} • {activeMaster.toUpperCase()}
             </h3>
 
-            {/* A. PRODUCT FORM */}
+            {/* PRODUCT FORM */}
             {activeMaster === "products" && (
               <form onSubmit={handleProductSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
@@ -1028,27 +701,26 @@ const Masters = ({
                       type="text" 
                       required 
                       value={pEngName} 
-                      onChange={(e) => setPEngName(e.target.value)} 
+                      name="englishName"
+                      data-no-transliterate="true"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPEngName(val);
+                        if (!pTamName || pTamName === transliterateEnglishToTamil(pEngName)) {
+                          setPTamName(transliterateEnglishToTamil(val));
+                        }
+                      }} 
                       placeholder="e.g. Ponni Rice"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
-                      <span>பெயர் (தமிழ்)</span>
-                      {pEngName && (
-                        <button 
-                          type="button" 
-                          onClick={() => setPTamName(transliterateEnglishToTamil(pEngName))} 
-                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
-                        >
-                          Auto-Fill
-                        </button>
-                      )}
-                    </label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
                     <input 
                       type="text" 
                       value={pTamName} 
+                      name="tamilName"
+                      data-transliterate="true"
                       onChange={(e) => setPTamName(transliterateEnglishToTamil(e.target.value))} 
                       placeholder="Phonetic (e.g. ponni)"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
@@ -1059,14 +731,14 @@ const Masters = ({
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Product Code</label>
-                    <input type="text" value={pCode} onChange={(e) => setPCode(e.target.value)} placeholder="Auto" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
+                    <input type="text" value={pCode} data-no-transliterate="true" onChange={(e) => setPCode(e.target.value)} placeholder="Auto" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
                   </div>
                   <div className="col-span-2">
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between">
                       <span>Barcode / UPC</span>
                       <button type="button" onClick={generateBarcode} className="text-[9px] text-blue-600 font-black uppercase hover:underline">Generate (F8)</button>
                     </label>
-                    <input type="text" value={pBarcode} onChange={(e) => setPBarcode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
+                    <input type="text" value={pBarcode} data-no-transliterate="true" onChange={(e) => setPBarcode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
                   </div>
                 </div>
 
@@ -1112,7 +784,7 @@ const Masters = ({
 
                 <div>
                   <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Product Image Link</label>
-                  <input type="text" value={pImageUrl} onChange={(e) => setPImageUrl(e.target.value)} placeholder="Paste URL or upload below" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold truncate" />
+                  <input type="text" value={pImageUrl} data-no-transliterate="true" onChange={(e) => setPImageUrl(e.target.value)} placeholder="Paste URL or upload below" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold truncate" />
                 </div>
 
                 <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50/50 transition-colors relative cursor-pointer">
@@ -1125,7 +797,7 @@ const Masters = ({
               </form>
             )}
 
-            {/* B. CUSTOMER FORM */}
+            {/* CUSTOMER FORM */}
             {activeMaster === "customers" && (
               <form onSubmit={handleCustomerSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
@@ -1135,27 +807,26 @@ const Masters = ({
                       type="text" 
                       required 
                       value={csName} 
-                      onChange={(e) => setCsName(e.target.value)} 
+                      name="customerName"
+                      data-no-transliterate="true"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCsName(val);
+                        if (!csTamilName || csTamilName === transliterateEnglishToTamil(csName)) {
+                          setCsTamilName(transliterateEnglishToTamil(val));
+                        }
+                      }} 
                       placeholder="e.g. Kannan"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
-                      <span>பெயர் (தமிழ்)</span>
-                      {csName && (
-                        <button 
-                          type="button" 
-                          onClick={() => setCsTamilName(transliterateEnglishToTamil(csName))} 
-                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
-                        >
-                          Auto-Fill
-                        </button>
-                      )}
-                    </label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
                     <input 
                       type="text" 
                       value={csTamilName} 
+                      name="tamilName"
+                      data-transliterate="true"
                       onChange={(e) => setCsTamilName(transliterateEnglishToTamil(e.target.value))} 
                       placeholder="Phonetic (e.g. kannan)"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
@@ -1166,17 +837,17 @@ const Masters = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Mobile Phone</label>
-                    <input type="text" maxLength={10} value={csPhone} onChange={(e) => setCsPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input type="text" maxLength={10} value={csPhone} data-no-transliterate="true" onChange={(e) => setCsPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                   </div>
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Email (Optional)</label>
-                    <input type="email" value={csEmail} onChange={(e) => setCsEmail(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input type="email" value={csEmail} data-no-transliterate="true" onChange={(e) => setCsEmail(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Delivery Address</label>
-                  <textarea value={csAddress} onChange={(e) => setCsAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold h-16 uppercase" />
+                  <textarea value={csAddress} data-no-transliterate="true" onChange={(e) => setCsAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold h-16 uppercase" />
                 </div>
 
                 <div>
@@ -1196,43 +867,7 @@ const Masters = ({
               </form>
             )}
 
-            {/* C. SUPPLIER FORM */}
-            {activeMaster === "suppliers" && (
-              <form onSubmit={handleSupplierSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Supplier Name / Mill Sourcing Agent</label>
-                  <input type="text" required value={csName} onChange={(e) => setCsName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Phone Number</label>
-                    <input type="text" maxLength={10} value={csPhone} onChange={(e) => setCsPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  </div>
-                  <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Mill / Company Address</label>
-                    <input type="text" value={csAddress} onChange={(e) => setCsAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Opening Outstanding Payable (₹)</label>
-                  <input type="number" value={csOutstanding} onChange={(e) => setCsOutstanding(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
-                </div>
-
-                <div>
-                  <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Supplier Status</label>
-                  <select value={csStatus} onChange={(e) => setCsStatus(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold cursor-pointer">
-                    <option value="Active">🟢 Active</option>
-                    <option value="Inactive">🔴 Inactive</option>
-                  </select>
-                </div>
-
-                <button type="submit" className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs uppercase tracking-widest cursor-pointer shadow-md">Save Supplier Profile</button>
-              </form>
-            )}
-
-            {/* D. GODOWN FORM */}
+            {/* GODOWN FORM */}
             {activeMaster === "godowns" && (
               <form onSubmit={handleGodownSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
@@ -1242,26 +877,25 @@ const Masters = ({
                       type="text" 
                       required 
                       value={gdName} 
-                      onChange={(e) => setGdName(e.target.value)} 
+                      name="godownName"
+                      data-no-transliterate="true"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setGdName(val);
+                        if (!gdTamil || gdTamil === transliterateEnglishToTamil(gdName)) {
+                          setGdTamil(transliterateEnglishToTamil(val));
+                        }
+                      }} 
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
-                      <span>பெயர் (தமிழ்)</span>
-                      {gdName && (
-                        <button 
-                          type="button" 
-                          onClick={() => setGdTamil(transliterateEnglishToTamil(gdName))} 
-                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
-                        >
-                          Auto-Fill
-                        </button>
-                      )}
-                    </label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
                     <input 
                       type="text" 
                       value={gdTamil} 
+                      name="tamilName"
+                      data-transliterate="true"
                       onChange={(e) => setGdTamil(transliterateEnglishToTamil(e.target.value))} 
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
                     />
@@ -1270,7 +904,7 @@ const Masters = ({
 
                 <div>
                   <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Storage Physical Address</label>
-                  <textarea value={gdAddress} onChange={(e) => setGdAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold h-16 uppercase" />
+                  <textarea value={gdAddress} data-no-transliterate="true" onChange={(e) => setGdAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold h-16 uppercase" />
                 </div>
 
                 <div>
@@ -1285,7 +919,7 @@ const Masters = ({
               </form>
             )}
 
-            {/* E. GENERIC MASTER FORM (Categories, Brands, Units, Payment Types) */}
+            {/* GENERIC MASTER FORM */}
             {["categories", "brands", "units", "paymentTypes"].includes(activeMaster) && (
               <form onSubmit={handleGenericMasterSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
@@ -1295,26 +929,25 @@ const Masters = ({
                       type="text" 
                       required 
                       value={mName} 
-                      onChange={(e) => setMName(e.target.value)} 
+                      name="entryName"
+                      data-no-transliterate="true"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMName(val);
+                        if (!mTamilName || mTamilName === transliterateEnglishToTamil(mName)) {
+                          setMTamilName(transliterateEnglishToTamil(val));
+                        }
+                      }} 
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between items-center">
-                      <span>பெயர் (தமிழ்)</span>
-                      {mName && (
-                        <button 
-                          type="button" 
-                          onClick={() => setMTamilName(transliterateEnglishToTamil(mName))} 
-                          className="text-[9px] text-blue-600 font-bold hover:underline cursor-pointer"
-                        >
-                          Auto-Fill
-                        </button>
-                      )}
-                    </label>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">பெயர் (தமிழ்)</label>
                     <input 
                       type="text" 
                       value={mTamilName} 
+                      name="tamilName"
+                      data-transliterate="true"
                       onChange={(e) => setMTamilName(transliterateEnglishToTamil(e.target.value))} 
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
                     />
@@ -1324,7 +957,7 @@ const Masters = ({
                 {["categories", "units"].includes(activeMaster) && (
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Code / Prefix</label>
-                    <input type="text" value={mCode} onChange={(e) => setMCode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase font-mono" />
+                    <input type="text" value={mCode} data-no-transliterate="true" onChange={(e) => setMCode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold uppercase font-mono" />
                   </div>
                 )}
 
@@ -1344,231 +977,6 @@ const Masters = ({
         </div>
       )}
 
-      {/* ==================== VIEW DETAIL MODAL ==================== */}
-      {viewingItem && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
-            <div className="bg-slate-900 text-white p-4 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Eye className="w-5 h-5 text-blue-400" />
-                <h3 className="text-sm font-black uppercase tracking-wider">
-                  {viewingType === "product" && "Product Master Details"}
-                  {viewingType === "customer" && "Customer Profile Details"}
-                  {viewingType === "supplier" && "Supplier / Mill Details"}
-                  {!["product", "customer", "supplier"].includes(viewingType) && "Master Record Details"}
-                </h3>
-              </div>
-              <button onClick={() => { setViewingItem(null); setViewingType(null); }} className="p-1 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-5 space-y-4 overflow-y-auto text-xs font-semibold text-slate-700">
-              {viewingType === "product" && (
-                <div className="space-y-3">
-                  {viewingItem.imageUrl && (
-                    <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-50 border border-slate-200">
-                      <img src={viewingItem.imageUrl} alt={viewingItem.englishName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Product Name (EN)</span>
-                      <span className="font-black text-slate-900 text-sm uppercase">{viewingItem.englishName || viewingItem.name}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">பெயர் (தமிழ்)</span>
-                      <span className="font-bold text-slate-800">{viewingItem.tamilName || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Product Code</span>
-                      <span className="font-mono font-bold text-slate-800">{viewingItem.productCode || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Barcode</span>
-                      <span className="font-mono text-slate-800">{viewingItem.barcode || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Packing / Bag Size</span>
-                      <span className="font-mono text-slate-800">{viewingItem.bagSize || "25kg"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">HSN Code</span>
-                      <span className="font-mono text-slate-800">{viewingItem.hsn || "1006"} ({viewingItem.gstPercent || 5}% GST)</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Purchase Rate</span>
-                      <span className="font-mono text-slate-800">₹{(viewingItem.purchasePrice || viewingItem.purchaseRate || 0).toFixed(2)}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Selling Rate</span>
-                      <span className="font-mono text-blue-600 font-black">₹{(viewingItem.sellingRate || 0).toFixed(2)}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Current Stock</span>
-                      <span className="font-mono font-bold text-emerald-600">{viewingItem.currentStock || 0} Bags</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Status</span>
-                      <span className="font-bold text-slate-800">{viewingItem.status || "Active"}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {viewingType === "customer" && (
-                <div className="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Customer Name</span>
-                      <span className="font-black text-slate-900 uppercase text-sm">{viewingItem.name}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">பெயர் (தமிழ்)</span>
-                      <span className="font-bold text-slate-800">{viewingItem.tamilName || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Mobile Phone</span>
-                      <span className="font-mono font-bold text-blue-600">{viewingItem.phone || "N/A"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Email</span>
-                      <span className="font-mono text-slate-700">{viewingItem.email || "N/A"}</span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Address / Town</span>
-                      <span className="text-slate-800 uppercase">{viewingItem.address || "Counter Customer"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">GSTIN Number</span>
-                      <span className="font-mono text-slate-800">{viewingItem.gstin || "N/A"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Credit Balance Due</span>
-                      <span className="font-mono font-black text-rose-600 text-sm">₹{(viewingItem.outstanding || 0).toLocaleString("en-IN")}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {viewingType === "supplier" && (
-                <div className="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Supplier / Mill Name</span>
-                      <span className="font-black text-slate-900 uppercase text-sm">{viewingItem.name}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Company / Mill</span>
-                      <span className="font-bold text-slate-800 uppercase">{viewingItem.companyName || viewingItem.name}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Mobile Phone</span>
-                      <span className="font-mono font-bold text-blue-600">{viewingItem.phone || "N/A"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">GSTIN Number</span>
-                      <span className="font-mono text-slate-800">{viewingItem.gstin || "N/A"}</span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Address Location</span>
-                      <span className="text-slate-800 uppercase">{viewingItem.address || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Outstanding Payable</span>
-                      <span className="font-mono font-black text-rose-600 text-sm">₹{(viewingItem.outstanding || 0).toLocaleString("en-IN")}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {!["product", "customer", "supplier"].includes(viewingType) && (
-                <div className="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Name (English)</span>
-                      <span className="font-black text-slate-900 uppercase">{viewingItem.name}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">பெயர் (தமிழ்)</span>
-                      <span className="font-bold text-slate-800">{viewingItem.tamilName || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Code</span>
-                      <span className="font-mono text-slate-800">{viewingItem.code || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Status</span>
-                      <span className="font-bold text-emerald-600">{viewingItem.status || "Active"}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
-              <button onClick={() => { setViewingItem(null); setViewingType(null); }} className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer shadow-md">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== CONFIRM DELETE DIALOG ==================== */}
-      {confirmDeleteId && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 space-y-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex justify-center items-center mx-auto">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">Confirm Removal</h4>
-              <p className="text-xs font-semibold text-slate-500 mt-1">
-                Are you sure you want to delete <span className="font-bold text-slate-800">"{confirmDeleteName || "this entry"}"</span>? This operation cannot be undone.
-              </p>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setConfirmDeleteId(null);
-                  setConfirmDeleteType(null);
-                  setConfirmDeleteName("");
-                }}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={executeDelete}
-                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-md shadow-rose-500/20"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Toast Alert Feedback */}
-      {toastMsg && (
-        <div className={`fixed bottom-5 right-5 text-white px-4 py-2.5 rounded-xl shadow-2xl border flex items-center gap-2 z-50 text-xs font-bold animate-bounce ${
-          toastType === "error" ? "bg-rose-950 border-rose-800 text-rose-200" : "bg-slate-900 border-slate-800"
-        }`}>
-          {toastType === "error" ? (
-            <AlertCircle className="w-4 h-4 text-rose-400" />
-          ) : (
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
-          )}
-          {toastMsg}
-        </div>
-      )}
-
     </div>
   );
 };
-
-export { Masters };
-export default Masters;

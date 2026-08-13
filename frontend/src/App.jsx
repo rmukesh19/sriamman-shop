@@ -139,21 +139,19 @@ function MainAppShell() {
       const isTextInput = target.tagName === "TEXTAREA" || ["text", "search", "url", ""].includes(inputType);
       if (!isTextInput) return true;
 
+      if (target.getAttribute("data-no-transliterate") === "true") return true;
+
       const lowerId = (target.id || "").toLowerCase();
       const lowerName = (target.name || "").toLowerCase();
       const lowerPlaceholder = (target.placeholder || "").toLowerCase();
-      return (
-        lowerId.includes("email") || lowerName.includes("email") ||
-        lowerId.includes("mobile") || lowerName.includes("mobile") || lowerId.includes("phone") || lowerName.includes("phone") ||
-        lowerId.includes("gst") || lowerName.includes("gst") || lowerPlaceholder.includes("gst") ||
-        lowerId.includes("barcode") || lowerName.includes("barcode") || lowerPlaceholder.includes("barcode") ||
-        lowerId.includes("hsn") || lowerName.includes("hsn") || lowerPlaceholder.includes("hsn") ||
-        lowerId.includes("username") || lowerName.includes("username") ||
-        lowerId.includes("password") || lowerName.includes("password") ||
-        target.type === "password" || target.type === "email" || target.type === "tel" ||
-        target.type === "number" ||
-        target.getAttribute("data-no-transliterate") === "true"
-      );
+
+      // Transliterate ONLY if the field is explicitly marked for Tamil or contains 'tamil'/'தமிழ்'
+      const isTamilTarget = 
+        target.getAttribute("data-transliterate") === "true" ||
+        lowerId.includes("tamil") || lowerName.includes("tamil") ||
+        lowerPlaceholder.includes("tamil") || lowerPlaceholder.includes("தமிழ்");
+
+      return !isTamilTarget;
     };
 
     const handleInput = (e) => {
