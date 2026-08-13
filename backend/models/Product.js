@@ -23,7 +23,9 @@ const ProductSchema = new mongoose.Schema({
   bagSize: { type: String, default: "25kg" },
   status: { type: String, default: "Active" },
   imageUrl: { type: String, default: "" },
-  gstPercent: { type: Number, default: 0 }
+  gstPercent: { type: Number, default: 0 },
+  recordDate: { type: String, default: () => new Date().toISOString().split("T")[0] },
+  stockCondition: { type: String, default: "New Stock" }
 }, { timestamps: true });
 
 export default mongoose.models.Product || mongoose.model("Product", ProductSchema);

@@ -87,6 +87,8 @@ export const Masters = ({
   };
 
   // 1. PRODUCT MASTER STATE FIELDS
+  const [pDate, setPDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [pStockCondition, setPStockCondition] = useState("New Stock");
   const [pEngName, setPEngName] = useState("");
   const [pTamName, setPTamName] = useState("");
   const [pCode, setPCode] = useState("");
@@ -159,6 +161,8 @@ export const Masters = ({
 
   const clearForm = () => {
     setEditingId(null);
+    setPDate(new Date().toISOString().split("T")[0]);
+    setPStockCondition("New Stock");
     setPEngName("");
     setPTamName("");
     setPCode("");
@@ -227,6 +231,8 @@ export const Masters = ({
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     const productData = {
+      recordDate: pDate || new Date().toISOString().split("T")[0],
+      stockCondition: pStockCondition || "New Stock",
       englishName: pEngName,
       tamilName: pTamName || pEngName,
       shortName: pEngName,
@@ -380,6 +386,8 @@ export const Masters = ({
 
   const startEditProduct = (p) => {
     setEditingId(p.id);
+    setPDate(p.recordDate || p.date || new Date().toISOString().split("T")[0]);
+    setPStockCondition(p.stockCondition || p.stockType || "New Stock");
     setPEngName(p.englishName);
     setPTamName(p.tamilName || "");
     setPCode(p.productCode || "");
@@ -694,6 +702,38 @@ export const Masters = ({
             {/* PRODUCT FORM */}
             {activeMaster === "products" && (
               <form onSubmit={handleProductSubmit} className="space-y-4">
+                
+                {/* TOP ROW: Record Date & Stock Condition Dropdown */}
+                <div className="grid grid-cols-2 gap-3 bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+                  <div>
+                    <label className="block text-[9px] font-black text-blue-900 uppercase mb-1 flex items-center justify-between">
+                      <span>Record Date (பதிவு தேதி)</span>
+                      <span className="text-[8px] text-blue-600 font-bold">Today / Previous</span>
+                    </label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={pDate} 
+                      data-no-transliterate="true"
+                      onChange={(e) => setPDate(e.target.value)} 
+                      className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono cursor-pointer text-slate-800" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-black text-blue-900 uppercase mb-1">
+                      Stock Condition (சரக்கு வகை)
+                    </label>
+                    <select 
+                      value={pStockCondition} 
+                      onChange={(e) => setPStockCondition(e.target.value)} 
+                      className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold cursor-pointer text-slate-800"
+                    >
+                      <option value="New Stock">🌾 New Stock (புதிய சரக்கு)</option>
+                      <option value="Old Stock">🍚 Old Stock (பழைய சரக்கு - Aged Rice)</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">English Name</label>
