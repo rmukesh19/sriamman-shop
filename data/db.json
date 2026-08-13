@@ -1,13 +1,226 @@
 {
-  "products": [],
+  "products": [
+    {
+      "recordDate": "2026-08-13",
+      "stockCondition": "New Stock",
+      "englishName": "ponni rice",
+      "tamilName": "பொன்னி ரிce",
+      "shortName": "ponni rice",
+      "productCode": "PC-713",
+      "barcode": "1786621306224",
+      "hsn": "1006",
+      "gstPercent": 5,
+      "purchasePrice": 67,
+      "purchaseRate": 67,
+      "sellingRate": 78,
+      "openingStock": 12,
+      "currentStock": 8,
+      "bagSize": "25kg",
+      "status": "Active",
+      "imageUrl": "",
+      "id": "prod-5hht19d6u"
+    }
+  ],
   "customers": [],
   "suppliers": [],
-  "bills": [],
+  "bills": [
+    {
+      "customerId": "cust-walkin",
+      "customerName": "Walk-in Customer",
+      "customerTamilName": "",
+      "billType": "Retail",
+      "paymentType": "Cash",
+      "paymentSplit": {
+        "cash": 78,
+        "upi": 0,
+        "card": 0,
+        "credit": 0
+      },
+      "subtotal": 78,
+      "discount": 0,
+      "gstAmount": 0,
+      "total": 78,
+      "paidAmount": 78,
+      "balance": 0,
+      "items": [
+        {
+          "productId": "prod-5hht19d6u",
+          "englishName": "ponni rice",
+          "tamilName": "பொன்னி ரிce",
+          "productCode": "PC-713",
+          "sellingMethod": "25kg",
+          "bagSizeKg": 25,
+          "qty": 1,
+          "totalWeightKg": 25,
+          "rate": 78,
+          "discount": 0,
+          "total": 78,
+          "imageUrl": ""
+        }
+      ],
+      "date": "2026-08-13 11:42:13",
+      "id": "bill-vulr7f07a",
+      "invoiceNo": "SAT-2026-2026-001",
+      "createdAt": "2026-08-13T11:42:14.008Z",
+      "status": "Active"
+    },
+    {
+      "customerId": "cust-walkin",
+      "customerName": "Walk-in Customer",
+      "customerTamilName": "",
+      "billType": "Retail",
+      "paymentType": "Cash",
+      "paymentSplit": {
+        "cash": 78,
+        "upi": 0,
+        "card": 0,
+        "credit": 0
+      },
+      "subtotal": 78,
+      "discount": 0,
+      "gstAmount": 0,
+      "total": 78,
+      "paidAmount": 78,
+      "balance": 0,
+      "items": [
+        {
+          "productId": "prod-5hht19d6u",
+          "englishName": "ponni rice",
+          "tamilName": "பொன்னி ரிce",
+          "productCode": "PC-713",
+          "sellingMethod": "25kg",
+          "bagSizeKg": 25,
+          "qty": 1,
+          "totalWeightKg": 25,
+          "rate": 78,
+          "discount": 0,
+          "total": 78,
+          "imageUrl": ""
+        }
+      ],
+      "date": "2026-08-13 11:42:19",
+      "id": "bill-mrrmoaosm",
+      "invoiceNo": "SAT-2026-2026-002",
+      "createdAt": "2026-08-13T11:42:19.560Z",
+      "status": "Active"
+    },
+    {
+      "customerId": "cust-walkin",
+      "customerName": "Walk-in Customer",
+      "customerTamilName": "",
+      "billType": "Retail",
+      "paymentType": "Cash",
+      "paymentSplit": {
+        "cash": 156,
+        "upi": 0,
+        "card": 0,
+        "credit": 0
+      },
+      "subtotal": 156,
+      "discount": 0,
+      "gstAmount": 0,
+      "total": 156,
+      "paidAmount": 156,
+      "balance": 0,
+      "items": [
+        {
+          "productId": "prod-5hht19d6u",
+          "englishName": "ponni rice",
+          "tamilName": "பொன்னி ரிce",
+          "productCode": "PC-713",
+          "sellingMethod": "25kg",
+          "bagSizeKg": 25,
+          "qty": 2,
+          "totalWeightKg": 50,
+          "rate": 78,
+          "discount": 0,
+          "total": 156,
+          "imageUrl": ""
+        }
+      ],
+      "date": "2026-08-13 11:42:35",
+      "id": "bill-dxfvyvhdf",
+      "invoiceNo": "SAT-2026-2026-003",
+      "createdAt": "2026-08-13T11:42:35.260Z",
+      "status": "Active"
+    }
+  ],
   "purchases": [],
-  "stockAdjustments": [],
+  "stockAdjustments": [
+    {
+      "id": "sa-2c3s5ngy9",
+      "productId": "prod-5hht19d6u",
+      "productName": "ponni rice",
+      "qty": 12,
+      "type": "Opening Stock",
+      "reason": "Initial Product Import",
+      "date": "2026-08-13 11:41:46"
+    }
+  ],
   "expenses": [],
   "incomes": [],
-  "accountsLedger": [],
+  "accountsLedger": [
+    {
+      "id": "ldgr-bcqwkrpf8",
+      "date": "2026-08-13",
+      "particulars": "Sales Invoice SAT-2026-2026-001 (Walk-in Customer)",
+      "referenceId": "bill-vulr7f07a",
+      "type": "Credit",
+      "amount": 78,
+      "accountGroup": "Sales",
+      "customerId": "cust-walkin"
+    },
+    {
+      "id": "ldgr-xqfwvohff",
+      "date": "2026-08-13",
+      "particulars": "Cash Received - Bill SAT-2026-2026-001",
+      "referenceId": "bill-vulr7f07a",
+      "type": "Debit",
+      "amount": 78,
+      "accountGroup": "Cash",
+      "customerId": "cust-walkin"
+    },
+    {
+      "id": "ldgr-6acvs4j2i",
+      "date": "2026-08-13",
+      "particulars": "Sales Invoice SAT-2026-2026-002 (Walk-in Customer)",
+      "referenceId": "bill-mrrmoaosm",
+      "type": "Credit",
+      "amount": 78,
+      "accountGroup": "Sales",
+      "customerId": "cust-walkin"
+    },
+    {
+      "id": "ldgr-inoe5q1c1",
+      "date": "2026-08-13",
+      "particulars": "Cash Received - Bill SAT-2026-2026-002",
+      "referenceId": "bill-mrrmoaosm",
+      "type": "Debit",
+      "amount": 78,
+      "accountGroup": "Cash",
+      "customerId": "cust-walkin"
+    },
+    {
+      "id": "ldgr-7qsslz6o6",
+      "date": "2026-08-13",
+      "particulars": "Sales Invoice SAT-2026-2026-003 (Walk-in Customer)",
+      "referenceId": "bill-dxfvyvhdf",
+      "type": "Credit",
+      "amount": 156,
+      "accountGroup": "Sales",
+      "customerId": "cust-walkin"
+    },
+    {
+      "id": "ldgr-l37upw2da",
+      "date": "2026-08-13",
+      "particulars": "Cash Received - Bill SAT-2026-2026-003",
+      "referenceId": "bill-dxfvyvhdf",
+      "type": "Debit",
+      "amount": 156,
+      "accountGroup": "Cash",
+      "customerId": "cust-walkin"
+    }
+  ],
   "financialYears": [
     {
       "id": "fy-2026-27",
@@ -45,41 +258,190 @@
     "invoicePrefix": "SAT-2026-",
     "language": "English",
     "darkMode": false,
-    "isInitialized": false
+    "isInitialized": true,
+    "companySettings": {
+      "companyName": "SRI AMMAN TRADERS",
+      "gstin": "33AAHFS3829M1Z8",
+      "address": "105, bypass Road, Erode, Tamil Nadu - 638001",
+      "phone": "9876543210",
+      "email": "sriammanriceerode@gmail.com",
+      "website": "www.sriammanrice.com",
+      "isInitialized": true
+    },
+    "adminUser": {
+      "username": "admin",
+      "password": "admin123",
+      "fullName": "Sri Amman Admin"
+    }
   },
   "categories": [
-    { "id": "cat-1", "name": "Ponni Rice", "tamilName": "பொன்னி அரிசி", "code": "PONNI", "status": "Active" },
-    { "id": "cat-2", "name": "Boiled Rice", "tamilName": "புழுங்கல் அரிசி", "code": "BOILED", "status": "Active" },
-    { "id": "cat-3", "name": "Raw Rice", "tamilName": "பச்சரிசி", "code": "RAW", "status": "Active" },
-    { "id": "cat-4", "name": "Idli Rice", "tamilName": "இட்லி அரிசி", "code": "IDLI", "status": "Active" },
-    { "id": "cat-5", "name": "Basmati Rice", "tamilName": "பாஸ்மதி அரிசி", "code": "BASMATI", "status": "Active" }
+    {
+      "id": "cat-1",
+      "name": "Ponni Rice",
+      "tamilName": "பொன்னி அரிசி",
+      "code": "PONNI",
+      "status": "Active"
+    },
+    {
+      "id": "cat-2",
+      "name": "Boiled Rice",
+      "tamilName": "புழுங்கல் அரிசி",
+      "code": "BOILED",
+      "status": "Active"
+    },
+    {
+      "id": "cat-3",
+      "name": "Raw Rice",
+      "tamilName": "பச்சரிசி",
+      "code": "RAW",
+      "status": "Active"
+    },
+    {
+      "id": "cat-4",
+      "name": "Idli Rice",
+      "tamilName": "இட்லி அரிசி",
+      "code": "IDLI",
+      "status": "Active"
+    },
+    {
+      "id": "cat-5",
+      "name": "Basmati Rice",
+      "tamilName": "பாஸ்மதி அரிசி",
+      "code": "BASMATI",
+      "status": "Active"
+    }
   ],
   "brands": [
-    { "id": "br-1", "name": "Sri Amman Gold", "tamilName": "ஸ்ரீ அம்மன் கோல்ட்", "status": "Active" },
-    { "id": "br-2", "name": "Double Deer", "tamilName": "டபுள் டீர்", "status": "Active" },
-    { "id": "br-3", "name": "Royal Harvest", "tamilName": "ராயல் ஹார்வெஸ்ட்", "status": "Active" }
+    {
+      "id": "br-1",
+      "name": "Sri Amman Gold",
+      "tamilName": "ஸ்ரீ அம்மன் கோல்ட்",
+      "status": "Active"
+    },
+    {
+      "id": "br-2",
+      "name": "Double Deer",
+      "tamilName": "டபுள் டீர்",
+      "status": "Active"
+    },
+    {
+      "id": "br-3",
+      "name": "Royal Harvest",
+      "tamilName": "ராயல் ஹார்வெஸ்ட்",
+      "status": "Active"
+    }
   ],
   "units": [
-    { "id": "un-1", "name": "25kg Bag", "tamilName": "25கிலோ சிப்பம்", "code": "25KG", "status": "Active" },
-    { "id": "un-2", "name": "50kg Bag", "tamilName": "50கிலோ மூட்டை", "code": "50KG", "status": "Active" },
-    { "id": "un-3", "name": "10kg Bag", "tamilName": "10கிலோ பை", "code": "10KG", "status": "Active" },
-    { "id": "un-4", "name": "5kg Bag", "tamilName": "5கிலோ பை", "code": "5KG", "status": "Active" },
-    { "id": "un-5", "name": "1kg Loose", "tamilName": "1கிலோ சில்லறை", "code": "1KG", "status": "Active" },
-    { "id": "un-6", "name": "Bags", "tamilName": "மூட்டைகள்", "code": "BAGS", "status": "Active" },
-    { "id": "un-7", "name": "Kg", "tamilName": "கிலோ", "code": "KG", "status": "Active" },
-    { "id": "un-8", "name": "Pack", "tamilName": "பாக்கெட்", "code": "PACK", "status": "Active" }
+    {
+      "id": "un-1",
+      "name": "25kg Bag",
+      "tamilName": "25கிலோ சிப்பம்",
+      "code": "25KG",
+      "status": "Active"
+    },
+    {
+      "id": "un-2",
+      "name": "50kg Bag",
+      "tamilName": "50கிலோ மூட்டை",
+      "code": "50KG",
+      "status": "Active"
+    },
+    {
+      "id": "un-3",
+      "name": "10kg Bag",
+      "tamilName": "10கிலோ பை",
+      "code": "10KG",
+      "status": "Active"
+    },
+    {
+      "id": "un-4",
+      "name": "5kg Bag",
+      "tamilName": "5கிலோ பை",
+      "code": "5KG",
+      "status": "Active"
+    },
+    {
+      "id": "un-5",
+      "name": "1kg Loose",
+      "tamilName": "1கிலோ சில்லறை",
+      "code": "1KG",
+      "status": "Active"
+    },
+    {
+      "id": "un-6",
+      "name": "Bags",
+      "tamilName": "மூட்டைகள்",
+      "code": "BAGS",
+      "status": "Active"
+    },
+    {
+      "id": "un-7",
+      "name": "Kg",
+      "tamilName": "கிலோ",
+      "code": "KG",
+      "status": "Active"
+    },
+    {
+      "id": "un-8",
+      "name": "Pack",
+      "tamilName": "பாக்கெட்",
+      "code": "PACK",
+      "status": "Active"
+    }
   ],
   "godowns": [
-    { "id": "god-1", "name": "Main Erode Godown", "tamilName": "ஈரோடு முதன்மை கிடங்கு", "address": "Bypass Road, Erode", "status": "Active" },
-    { "id": "god-2", "name": "Mill Yard Warehouse", "tamilName": "ஆலை வளாக கிடங்கு", "address": "Mill Road, Erode", "status": "Active" }
+    {
+      "id": "god-1",
+      "name": "Main Erode Godown",
+      "tamilName": "ஈரோடு முதன்மை கிடங்கு",
+      "address": "Bypass Road, Erode",
+      "status": "Active"
+    },
+    {
+      "id": "god-2",
+      "name": "Mill Yard Warehouse",
+      "tamilName": "ஆலை வளாக கிடங்கு",
+      "address": "Mill Road, Erode",
+      "status": "Active"
+    }
   ],
   "paymentTypes": [
-    { "id": "pay-1", "name": "Cash", "tamilName": "ரொக்கம்", "status": "Active" },
-    { "id": "pay-2", "name": "UPI / GPay / PhonePe", "tamilName": "யுபிஐ / ஜிபே", "status": "Active" },
-    { "id": "pay-3", "name": "Card (Credit/Debit)", "tamilName": "கார்டு", "status": "Active" },
-    { "id": "pay-4", "name": "Net Banking", "tamilName": "நெட் பேங்கிங்", "status": "Active" },
-    { "id": "pay-5", "name": "Credit Account", "tamilName": "கடன் கணக்கு", "status": "Active" },
-    { "id": "pay-6", "name": "Cheque / DD", "tamilName": "காசோலை", "status": "Active" }
+    {
+      "id": "pay-1",
+      "name": "Cash",
+      "tamilName": "ரொக்கம்",
+      "status": "Active"
+    },
+    {
+      "id": "pay-2",
+      "name": "UPI / GPay / PhonePe",
+      "tamilName": "யுபிஐ / ஜிபே",
+      "status": "Active"
+    },
+    {
+      "id": "pay-3",
+      "name": "Card (Credit/Debit)",
+      "tamilName": "கார்டு",
+      "status": "Active"
+    },
+    {
+      "id": "pay-4",
+      "name": "Net Banking",
+      "tamilName": "நெட் பேங்கிங்",
+      "status": "Active"
+    },
+    {
+      "id": "pay-5",
+      "name": "Credit Account",
+      "tamilName": "கடன் கணக்கு",
+      "status": "Active"
+    },
+    {
+      "id": "pay-6",
+      "name": "Cheque / DD",
+      "tamilName": "காசோலை",
+      "status": "Active"
+    }
   ],
   "gstMasters": [],
   "accountsGroups": [],

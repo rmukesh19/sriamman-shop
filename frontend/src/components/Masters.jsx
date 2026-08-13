@@ -94,7 +94,7 @@ export const Masters = ({
   const [pCode, setPCode] = useState("");
   const [pBarcode, setPBarcode] = useState("");
   const [pHsn, setPHsn] = useState("1006");
-  const [pGst, setPGst] = useState(5);
+  const [pGst, setPGst] = useState(0);
   const [pPurchase, setPPurchase] = useState("");
   const [pSell, setPSell] = useState("");
   const [pOpening, setPOpening] = useState("");
@@ -168,7 +168,7 @@ export const Masters = ({
     setPCode("");
     setPBarcode("");
     setPHsn("1006");
-    setPGst(5);
+    setPGst(0);
     setPPurchase("");
     setPSell("");
     setPOpening("");
@@ -239,7 +239,7 @@ export const Masters = ({
       productCode: pCode || `PC-${Math.floor(100 + Math.random() * 900)}`,
       barcode: pBarcode || String(Date.now()),
       hsn: pHsn,
-      gstPercent: Number(pGst) || 5,
+      gstPercent: 0,
       purchasePrice: Number(pPurchase) || 0,
       purchaseRate: Number(pPurchase) || 0,
       sellingRate: Number(pSell) || 0,
@@ -393,7 +393,7 @@ export const Masters = ({
     setPCode(p.productCode || "");
     setPBarcode(p.barcode || "");
     setPHsn(p.hsn || "1006");
-    setPGst(p.gstPercent || 5);
+    setPGst(p.gstPercent || 0);
     setPPurchase(p.purchasePrice || p.purchaseRate || "");
     setPSell(p.sellingRate || "");
     setPOpening(p.openingStock || "");
@@ -559,7 +559,6 @@ export const Masters = ({
                 <tr>
                   <th className="p-3 w-16">Image</th>
                   <th className="p-3">Product Name</th>
-                  <th className="p-3">Code / Barcode</th>
                   <th className="p-3">Bag Size</th>
                   <th className="p-3 text-right">Purchase Price (₹)</th>
                   <th className="p-3 text-right">Selling Price (₹)</th>
@@ -571,7 +570,7 @@ export const Masters = ({
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="p-6 text-center text-slate-400 uppercase font-black">No products found matching query.</td>
+                    <td colSpan="8" className="p-6 text-center text-slate-400 uppercase font-black">No products found matching query.</td>
                   </tr>
                 ) : (
                   filteredProducts.map((p) => (
@@ -591,10 +590,6 @@ export const Masters = ({
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-400 font-bold">{p.tamilName || "-"}</p>
-                      </td>
-                      <td className="p-3">
-                        <p className="font-bold text-slate-800 text-[11px] font-mono">{p.productCode}</p>
-                        <p className="text-[9px] text-slate-400 font-mono">{p.barcode || "-"}</p>
                       </td>
                       <td className="p-3">
                         <span className="bg-slate-50 px-2 py-0.5 border rounded text-[10px] font-black text-slate-600 font-mono">{p.bagSize || "25kg"}</span>
@@ -770,20 +765,6 @@ export const Masters = ({
                       placeholder="Phonetic (e.g. ponni)"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
                     />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Product Code</label>
-                    <input type="text" value={pCode} data-no-transliterate="true" onChange={(e) => setPCode(e.target.value)} placeholder="Auto" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between">
-                      <span>Barcode / UPC</span>
-                      <button type="button" onClick={generateBarcode} className="text-[9px] text-blue-600 font-black uppercase hover:underline">Generate (F8)</button>
-                    </label>
-                    <input type="text" value={pBarcode} data-no-transliterate="true" onChange={(e) => setPBarcode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
                   </div>
                 </div>
 

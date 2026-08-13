@@ -559,7 +559,6 @@ export const Masters = ({
                 <tr>
                   <th className="p-3 w-16">Image</th>
                   <th className="p-3">Product Name</th>
-                  <th className="p-3">Code / Barcode</th>
                   <th className="p-3">Bag Size</th>
                   <th className="p-3 text-right">Purchase Price (₹)</th>
                   <th className="p-3 text-right">Selling Price (₹)</th>
@@ -584,12 +583,13 @@ export const Masters = ({
                         )}
                       </td>
                       <td className="p-3">
-                        <p className="font-black text-slate-900 text-[11px] uppercase">{p.englishName}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-black text-slate-900 text-[11px] uppercase">{p.englishName}</p>
+                          <span className={`px-1.5 py-0.2 rounded text-[8px] font-black uppercase border ${p.stockCondition === "Old Stock" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                            {p.stockCondition === "Old Stock" ? "Old" : "New"}
+                          </span>
+                        </div>
                         <p className="text-[10px] text-slate-400 font-bold">{p.tamilName || "-"}</p>
-                      </td>
-                      <td className="p-3">
-                        <p className="font-bold text-slate-800 text-[11px] font-mono">{p.productCode}</p>
-                        <p className="text-[9px] text-slate-400 font-mono">{p.barcode || "-"}</p>
                       </td>
                       <td className="p-3">
                         <span className="bg-slate-50 px-2 py-0.5 border rounded text-[10px] font-black text-slate-600 font-mono">{p.bagSize || "25kg"}</span>
@@ -765,20 +765,6 @@ export const Masters = ({
                       placeholder="Phonetic (e.g. ponni)"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" 
                     />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Product Code</label>
-                    <input type="text" value={pCode} data-no-transliterate="true" onChange={(e) => setPCode(e.target.value)} placeholder="Auto" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between">
-                      <span>Barcode / UPC</span>
-                      <button type="button" onClick={generateBarcode} className="text-[9px] text-blue-600 font-black uppercase hover:underline">Generate (F8)</button>
-                    </label>
-                    <input type="text" value={pBarcode} data-no-transliterate="true" onChange={(e) => setPBarcode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono" />
                   </div>
                 </div>
 

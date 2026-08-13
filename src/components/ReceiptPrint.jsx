@@ -5,13 +5,13 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
   const { t, language } = useLanguage();
   const [printFormat, setPrintFormat] = React.useState(companySettings?.defaultPrintFormat || "80mm");
   React.useEffect(() => {
-    if (bill && companySettings?.autoPrint) {
+    if (bill) {
       const timer = setTimeout(() => {
         window.print();
-      }, 600);
+      }, 150);
       return () => clearTimeout(timer);
     }
-  }, [bill, companySettings]);
+  }, [bill]);
   if (!bill) return null;
   const fmt = (num) => {
     return new Intl.NumberFormat("en-IN", {

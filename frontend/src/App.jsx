@@ -523,12 +523,15 @@ function MainAppShell() {
       });
       if (res.ok) {
         const data = await res.json();
-        setActivePrintBill(data.bill);
-        await loadAllData();
-        await checkOfflineQueue();
+        setActivePrintBill(data.bill || bill);
+        loadAllData();
+        checkOfflineQueue();
+      } else {
+        setActivePrintBill({ ...bill, id: `bill-${Date.now()}` });
       }
     } catch (err) {
       console.error(err);
+      setActivePrintBill({ ...bill, id: `bill-${Date.now()}` });
     }
   };
 
