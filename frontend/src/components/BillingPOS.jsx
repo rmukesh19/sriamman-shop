@@ -188,23 +188,43 @@ const BillingPOS = ({
     return 1;
   };
 
+  const calculateCartItemTotal = (item) => {
+    const qty = Math.max(Number(item.qty) || 0, 0);
+    const rate = Math.max(Number(item.rate) || 0, 0);
+    const discount = Math.max(Number(item.discount) || 0, 0);
+    const method = item.sellingMethod || "25kg";
+    const bagKg = parseBagSizeKg(method);
+
+    if (method === "custom" || method === "1kg") {
+      const totalWeightKg = qty;
+      const total = Math.max(0, Math.round(qty * rate - discount));
+      return { totalWeightKg, total };
+    } else {
+      const totalWeightKg = qty * bagKg;
+      // If rate is per KG (e.g. 78/kg), 25kg bag total = 25 * 78 = 1950.
+      // If rate is already per Bag (> 200/bag), total = qty * rate.
+      const lineTotal = rate > 200 ? qty * rate : totalWeightKg * rate;
+      const total = Math.max(0, Math.round(lineTotal - discount));
+      return { totalWeightKg, total };
+    }
+  };
+
   const addToCart = (product) => {
     const existingIndex = cart.findIndex((item) => item.productId === product.id);
-    const rate = billType === "Wholesale" ? (product.wholesaleRate || product.sellingRate) : product.sellingRate;
+    const rawRate = billType === "Wholesale" ? (product.wholesaleRate || product.sellingRate) : product.sellingRate;
+    const rate = Number(rawRate) || 0;
     const initialMethod = (product.bagSize || "25kg").toLowerCase();
     const bagKg = parseBagSizeKg(initialMethod);
 
     if (existingIndex !== -1) {
       const updatedCart = [...cart];
       updatedCart[existingIndex].qty += 1;
-      const curBagKg = parseBagSizeKg(updatedCart[existingIndex].sellingMethod);
-      updatedCart[existingIndex].totalWeightKg = updatedCart[existingIndex].sellingMethod === "custom" 
-        ? updatedCart[existingIndex].qty 
-        : updatedCart[existingIndex].qty * curBagKg;
-      updatedCart[existingIndex].total = Math.round(updatedCart[existingIndex].qty * updatedCart[existingIndex].rate - updatedCart[existingIndex].discount);
+      const calc = calculateCartItemTotal(updatedCart[existingIndex]);
+      updatedCart[existingIndex].totalWeightKg = calc.totalWeightKg;
+      updatedCart[existingIndex].total = calc.total;
       setCart(updatedCart);
     } else {
-      setCart([...cart, {
+      const newItem = {
         productId: product.id,
         englishName: product.englishName,
         tamilName: product.tamilName,
@@ -215,11 +235,14 @@ const BillingPOS = ({
         totalWeightKg: bagKg,
         rate,
         discount: 0,
-        total: rate,
+        total: 0,
         imageUrl: product.imageUrl
-      }]);
+      };
+      const calc = calculateCartItemTotal(newItem);
+      newItem.totalWeightKg = calc.totalWeightKg;
+      newItem.total = calc.total;
+      setCart([...cart, newItem]);
     }
-    // Ready for next product
     setSearchQuery("");
     setTimeout(() => {
       if (searchInputRef.current) {
@@ -230,42 +253,48 @@ const BillingPOS = ({
 
   const updateCartMethod = (idx, newMethod) => {
     const updated = [...cart];
-    updated[idx].sellingMethod = newMethod;
-    const bagKg = parseBagSizeKg(newMethod);
-    updated[idx].bagSizeKg = bagKg;
-    if (newMethod === "custom") {
-      updated[idx].totalWeightKg = updated[idx].qty;
-    } else {
-      updated[idx].totalWeightKg = updated[idx].qty * bagKg;
+    const oldMethod = updated[idx].sellingMethod;
+    const oldBagKg = parseBagSizeKg(oldMethod);
+    const newBagKg = parseBagSizeKg(newMethod);
+    
+    // If switching from a Bag rate (> 200) to 1kg / custom retail, convert rate to Per KG Rate
+    if ((newMethod === "custom" || newMethod === "1kg") && updated[idx].rate > 200 && oldBagKg > 1) {
+      updated[idx].rate = Math.round(updated[idx].rate / oldBagKg);
     }
-    updated[idx].total = Math.round(updated[idx].qty * updated[idx].rate - updated[idx].discount);
+    
+    updated[idx].sellingMethod = newMethod;
+    updated[idx].bagSizeKg = newBagKg;
+
+    const calc = calculateCartItemTotal(updated[idx]);
+    updated[idx].totalWeightKg = calc.totalWeightKg;
+    updated[idx].total = calc.total;
     setCart(updated);
   };
 
   const updateCartQty = (idx, val) => {
     const updated = [...cart];
-    const qtyVal = Math.max(val, 0.1);
-    updated[idx].qty = qtyVal;
-    if (updated[idx].sellingMethod === "custom") {
-      updated[idx].totalWeightKg = qtyVal;
-    } else {
-      updated[idx].totalWeightKg = qtyVal * (updated[idx].bagSizeKg || 1);
-    }
-    updated[idx].total = Math.round(qtyVal * updated[idx].rate - updated[idx].discount);
+    updated[idx].qty = Math.max(val, 0.1);
+    const calc = calculateCartItemTotal(updated[idx]);
+    updated[idx].totalWeightKg = calc.totalWeightKg;
+    updated[idx].total = calc.total;
     setCart(updated);
   };
 
   const updateCartDiscount = (idx, val) => {
     const updated = [...cart];
     updated[idx].discount = Math.max(val, 0);
-    updated[idx].total = Math.round(updated[idx].qty * updated[idx].rate - updated[idx].discount);
+    const calc = calculateCartItemTotal(updated[idx]);
+    updated[idx].totalWeightKg = calc.totalWeightKg;
+    updated[idx].total = calc.total;
     setCart(updated);
   };
 
   const updateCartRate = (idx, val) => {
     const updated = [...cart];
     updated[idx].rate = Math.max(val, 0);
-    updated[idx].total = Math.round(updated[idx].qty * updated[idx].rate - updated[idx].discount);
+    const calc = calculateCartItemTotal(updated[idx]);
+    updated[idx].totalWeightKg = calc.totalWeightKg;
+    updated[idx].total = calc.total;
     setCart(updated);
   };
 
