@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
 import path from "path";
@@ -86,6 +87,22 @@ app.use("/api/units", unitsRouter);
 app.use("/api/godowns", godownsRouter);
 app.use("/api/gstmasters", gstmastersRouter);
 app.use("/api/payment-types", paymentTypesRouter);
+
+// Reset Database endpoint
+app.post("/api/reset-database", async (req, res) => {
+  try {
+    if (mongoose.connection && mongoose.connection.db) {
+      const collections = await mongoose.connection.db.collections();
+      for (let collection of collections) {
+        await collection.deleteMany({});
+      }
+      return res.json({ success: true, message: "All MongoDB database collections cleared successfully!" });
+    }
+    return res.status(500).json({ success: false, message: "Database not connected" });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
