@@ -1,178 +1,119 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
-import { TransliteratedInput, TransliteratedTextArea } from "./TransliteratedInput.jsx";
 import {
   Search,
-  Trash2,
-  Keyboard,
   ShoppingCart,
-  UserPlus,
-  ChevronDown,
-  Play,
-  Pause,
-  Save,
-  X,
-  Tag,
-  Package,
   Plus,
-  Coins,
+  Minus,
+  Trash2,
+  Save,
+  Pause,
+  Play,
+  RotateCcw,
+  UserPlus,
+  CheckCircle,
+  X,
+  Keyboard,
+  Printer,
+  ChevronDown,
+  DollarSign,
+  Package,
+  Layers,
+  Sparkles,
   CreditCard,
-  CheckCircle
+  Building,
+  Wallet,
+  ArrowRight,
+  Calculator,
+  Grid
 } from "lucide-react";
 
-const BillingPOS = ({
+export const BillingPOS = ({
   products: _products = [],
   customers: _customers = [],
-  onAddCustomer,
-  onSaveBill,
+  bills: _bills = [],
   holdBills: _holdBills = [],
+  onSaveBill,
   onHoldBill,
   onResumeBill,
-  nextInvoiceNo
+  onAddCustomer,
+  companySettings,
+  loadAllData
 }) => {
   const products = Array.isArray(_products) ? _products : [];
   const customers = Array.isArray(_customers) ? _customers : [];
   const holdBills = Array.isArray(_holdBills) ? _holdBills : [];
 
   const { t, language } = useLanguage();
+  const searchInputRef = useRef(null);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCustomerId, setSelectedCustomerId] = useState("cust-walkin");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [cart, setCart] = useState([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState("cust-walkin");
   const [billType, setBillType] = useState("Retail");
   const [paymentType, setPaymentType] = useState("Cash");
-  const [paymentSplit, setPaymentSplit] = useState({ cash: 0, upi: 0, card: 0, credit: 0 });
+
+  const [cart, setCart] = useState([]);
   const [paidAmount, setPaidAmount] = useState("");
   const [globalDiscount, setGlobalDiscount] = useState("0");
+  const [paymentSplit, setPaymentSplit] = useState({ cash: 0, upi: 0, card: 0, credit: 0 });
+
   const [showQuickCustomerModal, setShowQuickCustomerModal] = useState(false);
   const [newCustName, setNewCustName] = useState("");
   const [newCustPhone, setNewCustPhone] = useState("");
   const [newCustTamil, setNewCustTamil] = useState("");
   const [newCustAddress, setNewCustAddress] = useState("");
-  const searchInputRef = useRef(null);
-  const paidInputRef = useRef(null);
-  const discountInputRef = useRef(null);
-  const customerSelectRef = useRef(null);
+
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
 
-  // Focus search input on load
   useEffect(() => {
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, []);
 
-  // Recalculate cart rates when billType changes
-  useEffect(() => {
-    if (cart.length > 0) {
-      const updatedCart = cart.map((item) => {
-        const prod = products.find((p) => p.id === item.productId);
-        if (prod) {
-          const rate = billType === "Wholesale" ? prod.wholesaleRate : prod.sellingRate;
-          return {
-            ...item,
-            rate,
-            total: rate * item.qty - item.discount
-          };
-        }
-        return item;
-      });
-      setCart(updatedCart);
-    }
-  }, [billType]);
-
-  // Extract dynamic categories from active products
   const categoriesList = useMemo(() => {
-    const list = new Set();
+    const setCats = new Set(["All"]);
     products.forEach((p) => {
-      if (p.category) {
-        list.add(p.category);
-      }
+      if (p.category) setCats.add(p.category);
     });
-    return ["All", ...Array.from(list)];
+    return Array.from(setCats);
   }, [products]);
 
-  // Filter products for the POS Grid
   const filteredGridProducts = useMemo(() => {
     return products.filter((p) => {
-      // Must be active
-      if (p.status !== "Active") return false;
-
-      // Category filter
-      if (selectedCategory !== "All" && p.category !== selectedCategory) return false;
-
-      // Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const codeMatch = (p.productCode || "").toLowerCase().includes(q);
-        const barcodeMatch = (p.barcode || "").toLowerCase().includes(q);
-        const englishMatch = (p.englishName || "").toLowerCase().includes(q);
-        const tamilMatch = (p.tamilName || "").toLowerCase().includes(q);
-        const shortMatch = (p.shortName || "").toLowerCase().includes(q);
-        return codeMatch || barcodeMatch || englishMatch || tamilMatch || shortMatch;
-      }
-
-      return true;
+      const matchCat = selectedCategory === "All" || p.category === selectedCategory;
+      const matchSearch =
+        p.englishName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.tamilName && p.tamilName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.productCode && p.productCode.toLowerCase().includes(searchQuery.toLowerCase()));
+      const isActive = p.status !== "Inactive";
+      return matchCat && matchSearch && isActive;
     });
   }, [products, selectedCategory, searchQuery]);
 
-  // Handle barcode exact match auto-addition
-  useEffect(() => {
-    if (!searchQuery.trim()) return;
-    const q = searchQuery.trim();
-    const exactMatch = products.find((p) => p.status === "Active" && p.barcode === q);
-    if (exactMatch) {
-      addToCart(exactMatch);
-      setSearchQuery("");
-      if (searchInputRef.current) {
-        searchInputRef.current.focus();
-      }
-    }
-  }, [searchQuery, products]);
-
-  // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") {
+        if (e.key === "F5") {
+          e.preventDefault();
+          submitBill();
+        }
+        return;
+      }
+
       if (e.key === "F2") {
         e.preventDefault();
         clearPOS();
-      }
-      if (e.key === "F3") {
-        e.preventDefault();
-        if (customerSelectRef.current) {
-          customerSelectRef.current.focus();
-        }
-      }
-      if (e.key === "F4") {
-        e.preventDefault();
-        if (paidInputRef.current) {
-          paidInputRef.current.focus();
-          paidInputRef.current.select();
-        }
-      }
-      if (e.key === "F5") {
+      } else if (e.key === "F5") {
         e.preventDefault();
         submitBill();
-      }
-      if (e.key === "F7") {
+      } else if (e.key === "F7") {
         e.preventDefault();
         triggerHold();
-      }
-      if (e.key === "F9") {
+      } else if (e.key === "F9") {
         e.preventDefault();
-        if (discountInputRef.current) {
-          discountInputRef.current.focus();
-          discountInputRef.current.select();
-        }
-      }
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setShowQuickCustomerModal(false);
-        setShowShortcutsModal(false);
-        setSearchQuery("");
-        if (searchInputRef.current) {
-          searchInputRef.current.focus();
-        }
+        if (searchInputRef.current) searchInputRef.current.focus();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -205,8 +146,6 @@ const BillingPOS = ({
       return { totalWeightKg, total };
     } else {
       const totalWeightKg = qty * bagKg;
-      // If rate is per KG (e.g. 78/kg), 25kg bag total = 25 * 78 = 1950.
-      // If rate is already per Bag (> 200/bag), total = qty * rate.
       const lineTotal = rate > 200 ? qty * rate : totalWeightKg * rate;
       const total = Math.max(0, Math.round(lineTotal - discount));
       return { totalWeightKg, total };
@@ -261,7 +200,6 @@ const BillingPOS = ({
     const oldBagKg = parseBagSizeKg(oldMethod);
     const newBagKg = parseBagSizeKg(newMethod);
     
-    // If switching from a Bag rate (> 200) to 1kg / custom retail, convert rate to Per KG Rate
     if ((newMethod === "custom" || newMethod === "1kg") && updated[idx].rate > 200 && oldBagKg > 1) {
       updated[idx].rate = Math.round(updated[idx].rate / oldBagKg);
     }
@@ -326,9 +264,7 @@ const BillingPOS = ({
   const grandTotal = Math.max(Math.round(subtotal - totalDiscount), 0);
   const gstAmount = 0;
 
-  // Split payment & credit calculations
   const parsedPaid = Number(paidAmount) || 0;
-  
   let splitCash = Number(paymentSplit?.cash) || 0;
   let splitUpi = Number(paymentSplit?.upi) || 0;
   let splitCard = Number(paymentSplit?.card) || 0;
@@ -435,100 +371,58 @@ const BillingPOS = ({
               type="button"
               id="pos-quick-customer-btn"
               onClick={() => setShowQuickCustomerModal(true)}
-              className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1 uppercase"
+              className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1 uppercase cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               {t("quickCustomer") || "New Customer"}
             </button>
           </div>
 
-          <div className="relative">
-            <select
-              id="pos-customer-select"
-              ref={customerSelectRef}
-              value={selectedCustomerId}
-              onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 appearance-none cursor-pointer"
-            >
-              {customers.filter((c) => c.status !== "Inactive" || c.id === "cust-walkin" || c.id === selectedCustomerId).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {language === "English" ? c.name : c.tamilName || c.name} {c.outstanding > 0 ? `(O/S: ₹${c.outstanding})` : ""}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
-          </div>
+          <select
+            value={selectedCustomerId}
+            onChange={(e) => setSelectedCustomerId(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/10 cursor-pointer"
+          >
+            {customers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {language === "Both" || language === "Dual"
+                  ? `${c.name} (${c.tamilName || c.name}) - ${c.phone || "No Phone"}`
+                  : language === "Tamil"
+                  ? `${c.tamilName || c.name} - ${c.phone || "No Phone"}`
+                  : `${c.name} - ${c.phone || "No Phone"}`}
+              </option>
+            ))}
+          </select>
 
-          {/* Payment Mode Selector */}
-          <div>
-            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">PAYMENT MODE</label>
-            <div className="grid grid-cols-4 gap-1.5 bg-slate-100 p-1.5 rounded-xl text-center">
+          {/* Payment Type Selection Buttons */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">PAYMENT MODE</label>
+            <div className="grid grid-cols-4 gap-1.5">
               {[
-                { id: "Cash", label: "💵 Cash" },
-                { id: "Bank", label: "🏦 Bank / UPI" },
-                { id: "Split", label: "🔀 Split Payment" },
-                { id: "Credit", label: "📝 Credit" }
-              ].map((mode) => (
+                { type: "Cash", icon: Wallet, label: "Cash" },
+                { type: "Bank", icon: Building, label: "Bank / UPI" },
+                { type: "Split", icon: Layers, label: "Split Payment" },
+                { type: "Credit", icon: CreditCard, label: "Credit" }
+              ].map(({ type, icon: Icon, label }) => (
                 <button
-                  key={mode.id}
+                  key={type}
                   type="button"
-                  onClick={() => {
-                    setPaymentType(mode.id);
-                    if (mode.id === "Credit") setPaidAmount("0");
-                    if (mode.id === "Split" && (!paymentSplit || (paymentSplit.cash === 0 && paymentSplit.upi === 0))) {
-                      setPaymentSplit({ cash: Math.round(grandTotal / 2), upi: Math.round(grandTotal / 2) });
-                    }
-                  }}
-                  className={`py-2 text-[10px] font-black uppercase rounded-lg text-center transition-all cursor-pointer ${
-                    paymentType === mode.id ? "bg-blue-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                  onClick={() => setPaymentType(type)}
+                  className={`py-2 px-1 rounded-xl text-[10px] font-extrabold border flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    paymentType === type
+                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                      : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
-                  {mode.label}
+                  <Icon className="w-3 h-3" />
+                  <span className="truncate">{label}</span>
                 </button>
               ))}
             </div>
           </div>
-
-          {/* SPLIT PAYMENT DETAILED ENTRY BREAKDOWN */}
-          {paymentType === "Split" && (
-            <div className="mt-2.5 p-2.5 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black text-blue-900 uppercase tracking-wider">🔀 Split Payment Breakdown</span>
-                <span className="text-[10px] font-mono font-bold text-slate-600">Total Bill: ₹{grandTotal}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">💵 Cash Amount (₹)</label>
-                  <input
-                    type="number"
-                    value={paymentSplit?.cash || 0}
-                    onChange={(e) => setPaymentSplit({ ...paymentSplit, cash: Math.max(0, Number(e.target.value)) })}
-                    className="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-slate-800 text-center focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">🏦 Bank / UPI Amount (₹)</label>
-                  <input
-                    type="number"
-                    value={paymentSplit?.upi || 0}
-                    onChange={(e) => setPaymentSplit({ ...paymentSplit, upi: Math.max(0, Number(e.target.value)) })}
-                    className="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-slate-800 text-center focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-between items-center pt-1 border-t border-blue-100 text-[10px] font-bold">
-                <span className="text-slate-600">Total Paid: <b className="text-emerald-700">₹{splitTotalPaid}</b></span>
-                {balance > 0 ? (
-                  <span className="text-amber-600 font-black">Remaining Balance: ₹{balance}</span>
-                ) : (
-                  <span className="text-emerald-600 font-black">✅ Payment Complete</span>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Cart Item list */}
+        {/* CART ITEMS TABLE */}
         <div className="flex-1 overflow-y-auto my-3 border border-slate-100 rounded-xl">
           {cart.length === 0 ? (
             <div className="h-full flex flex-col justify-center items-center text-slate-400 py-8">
@@ -550,134 +444,130 @@ const BillingPOS = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {cart.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/50">
-                    <td className="p-2">
-                      <p className="font-bold text-slate-800 text-[11px] truncate max-w-[140px]">
-                        {language === "Both" || language === "Dual"
-                          ? `${item.englishName} (${item.tamilName || item.englishName})`
-                          : language === "Tamil"
-                          ? item.tamilName || item.englishName
-                          : item.englishName}
-                      </p>
-                      <span className="text-[9px] text-slate-400 font-mono font-bold bg-slate-100 px-1 py-0.2 rounded mt-0.5 inline-block">
-                        {item.productCode}
-                      </span>
-                    </td>
-                    <td className="p-2">
-                      <select
-                        value={item.sellingMethod || "25kg"}
-                        onChange={(e) => updateCartMethod(idx, e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[10px] focus:outline-none focus:bg-white cursor-pointer"
-                      >
-                        <option value="75kg">75 Kg Bag</option>
-                        <option value="70kg">70 Kg Bag</option>
-                        <option value="50kg">50 Kg Bag</option>
-                        <option value="26kg">26 Kg Bag</option>
-                        <option value="25kg">25 Kg Bag</option>
-                        <option value="10kg">10 Kg Bag</option>
-                        <option value="5kg">5 Kg Bag</option>
-                        <option value="2kg">2 Kg Pack</option>
-                        <option value="1kg">1 Kg Pack</option>
-                        <option value="custom">Custom Weight</option>
-                      </select>
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) => updateCartRate(idx, Number(e.target.value))}
-                        className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[11px] focus:outline-none focus:bg-white"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="number"
-                        step={item.sellingMethod === "custom" ? "0.1" : "1"}
-                        value={item.qty}
-                        onChange={(e) => updateCartQty(idx, Number(e.target.value))}
-                        className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[11px] focus:outline-none focus:bg-white"
-                      />
-                    </td>
-                    <td className="p-2 text-center text-[11px] font-bold text-slate-600 font-mono">
-                      {item.totalWeightKg || (item.sellingMethod === "custom" ? item.qty : item.qty * (item.bagSizeKg || 1))} Kg
-                    </td>
-                    <td className="p-2 text-right font-black text-slate-800 text-[11px]">
-                      ₹{item.total}
-                    </td>
-                    <td className="p-2 text-center">
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(idx)}
-                        className="text-slate-400 hover:text-rose-600 rounded transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {cart.map((item, idx) => {
+                  const masterProd = products.find((p) => p.id === item.productId);
+                  const bagKg = parseBagSizeKg(item.sellingMethod || (masterProd?.bagSize) || "25kg");
+                  const totalProdStock = masterProd ? masterProd.currentStock : 0;
+                  const remainStockBags = Math.max(0, totalProdStock - item.qty);
+                  const remainStockKg = remainStockBags * bagKg;
+
+                  return (
+                    <tr key={idx} className="hover:bg-slate-50/50">
+                      <td className="p-2">
+                        <p className="font-bold text-slate-800 text-[11px] truncate max-w-[140px]">
+                          {language === "Both" || language === "Dual"
+                            ? `${item.englishName} (${item.tamilName || item.englishName})`
+                            : language === "Tamil"
+                            ? item.tamilName || item.englishName
+                            : item.englishName}
+                        </p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-[8px] font-bold text-blue-700 bg-blue-50 px-1 py-0.2 rounded border border-blue-150">
+                            Remain: {remainStockBags} Bags ({remainStockKg} Kg)
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-2">
+                        <select
+                          value={item.sellingMethod || "25kg"}
+                          onChange={(e) => updateCartMethod(idx, e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[10px] focus:outline-none focus:bg-white cursor-pointer"
+                        >
+                          <option value="75kg">75 Kg Bag</option>
+                          <option value="70kg">70 Kg Bag</option>
+                          <option value="50kg">50 Kg Bag</option>
+                          <option value="26kg">26 Kg Bag</option>
+                          <option value="25kg">25 Kg Bag</option>
+                          <option value="10kg">10 Kg Bag</option>
+                          <option value="5kg">5 Kg Bag</option>
+                          <option value="2kg">2 Kg Pack</option>
+                          <option value="1kg">1 Kg Pack</option>
+                          <option value="custom">Custom Weight</option>
+                        </select>
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          value={item.rate}
+                          onChange={(e) => updateCartRate(idx, Number(e.target.value))}
+                          className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[11px] focus:outline-none focus:bg-white"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          step={item.sellingMethod === "custom" ? "0.1" : "1"}
+                          value={item.qty}
+                          onChange={(e) => updateCartQty(idx, Number(e.target.value))}
+                          className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[11px] focus:outline-none focus:bg-white"
+                        />
+                      </td>
+                      <td className="p-2 text-center text-[11px] font-bold text-slate-600 font-mono">
+                        {item.totalWeightKg || (item.sellingMethod === "custom" ? item.qty : item.qty * (item.bagSizeKg || 1))} Kg
+                      </td>
+                      <td className="p-2 text-right font-black text-slate-800 text-[11px]">
+                        ₹{item.total}
+                      </td>
+                      <td className="p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(idx)}
+                          className="text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
 
-        {/* Totals & Calculations Section */}
-        <div className="space-y-2.5 shrink-0 border-t border-slate-100 pt-3">
-          <div className="grid grid-cols-2 gap-2">
-            {/* Additional Discount */}
+        {/* CHECKOUT CALCULATIONS & BUTTONS */}
+        <div className="space-y-3 shrink-0 pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">FLAT DISCOUNT (₹)</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Flat Discount (₹)</label>
               <input
                 type="number"
-                ref={discountInputRef}
                 value={globalDiscount}
                 onChange={(e) => setGlobalDiscount(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:bg-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs font-bold font-mono text-slate-800 mt-1"
               />
             </div>
-
-            {/* Paid Amount */}
-            {paymentType !== "Split" && (
-              <div>
-                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                  AMOUNT PAID (₹) {paymentType === "Credit" ? "(Partial Credit)" : ""}
-                </label>
-                <input
-                  type="number"
-                  ref={paidInputRef}
-                  value={paidAmount}
-                  onChange={(e) => setPaidAmount(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-black text-slate-800 focus:outline-none focus:bg-white"
-                  placeholder={paymentType === "Credit" ? "0 (Full Credit)" : String(grandTotal)}
-                />
-              </div>
-            )}
+            <div>
+              <label className="text-[10px] font-bold text-slate-500 uppercase">
+                {paymentType === "Credit" ? "Advance Received (₹)" : "Amount Paid (₹)"}
+              </label>
+              <input
+                type="number"
+                value={paidAmount}
+                onChange={(e) => setPaidAmount(e.target.value)}
+                placeholder={`₹${grandTotal}`}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs font-bold font-mono text-slate-800 mt-1"
+              />
+            </div>
           </div>
 
-          <div className="bg-slate-50/80 rounded-xl p-3 space-y-1.5 border border-slate-150">
-            <div className="flex justify-between text-[11px] text-slate-500 font-bold uppercase">
-              <span>Subtotal</span>
+          <div className="bg-slate-900 text-white p-3 rounded-xl space-y-1">
+            <div className="flex justify-between items-center text-xs opacity-80">
+              <span>SUBTOTAL</span>
               <span>₹{subtotal}</span>
             </div>
-            {totalDiscount > 0 && (
-              <div className="flex justify-between text-[11px] text-rose-600 font-bold uppercase">
-                <span>Discount</span>
-                <span>- ₹{totalDiscount}</span>
-              </div>
-            )}
-            <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200">
-              <span className="text-[11px] font-black text-slate-800 uppercase">NET PAYABLE</span>
-              <span className="text-lg font-black text-blue-600">₹{grandTotal}</span>
+            <div className="flex justify-between items-center text-sm font-black tracking-wider pt-1 border-t border-slate-800">
+              <span className="text-emerald-400">NET PAYABLE</span>
+              <span className="text-emerald-400 text-lg font-mono">₹{grandTotal}</span>
             </div>
             {balance > 0 && (
-              <div className="flex justify-between text-[11px] text-rose-500 font-black uppercase pt-1">
-                <span>Outstanding / Credit Balance</span>
+              <div className="flex justify-between items-center text-xs text-rose-400 font-bold pt-1">
+                <span>DUE / OUTSTANDING BALANCE</span>
                 <span>₹{balance}</span>
               </div>
             )}
           </div>
 
-          {/* Action Triggers */}
           <div className="space-y-1.5">
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -707,7 +597,6 @@ const BillingPOS = ({
           </div>
         </div>
 
-        {/* Held Bills Bar */}
         {holdBills.length > 0 && (
           <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-none">
             <span className="text-[9px] font-black text-amber-700 uppercase shrink-0">HELD BILLS ({holdBills.length}):</span>
@@ -724,10 +613,8 @@ const BillingPOS = ({
         )}
       </div>
 
-      {/* RIGHT SIDE: Product Selection Grid with Images (7 Columns) */}
+      {/* RIGHT SIDE: Product Selection Grid with Images */}
       <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col lg:h-full h-[650px] overflow-hidden">
-        
-        {/* Search Bar & Categories Filter */}
         <div className="space-y-3 shrink-0">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -735,14 +622,13 @@ const BillingPOS = ({
                 <Search className="w-4 h-4" />
               </span>
               <input
-                id="pos-search-input"
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
+                data-no-transliterate="true"
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 text-xs font-bold text-slate-800 placeholder:text-slate-400 uppercase tracking-wide"
-                placeholder="Scan barcode or search rice varieties (Ponni, Samba, Basmati)..."
-                autoComplete="off"
+                placeholder="SCAN BARCODE OR SEARCH RICE VARIETIES (PONNI, SAMBA, BASMATI)..."
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500"
               />
             </div>
             <button
@@ -756,7 +642,6 @@ const BillingPOS = ({
             </button>
           </div>
 
-          {/* Dynamic Categories Scrollbar */}
           <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-slate-200">
             {categoriesList.map((cat) => (
               <button
@@ -775,7 +660,6 @@ const BillingPOS = ({
           </div>
         </div>
 
-        {/* Product Card Grid (Clean, Simple and Modern POS UI with Images) */}
         <div className="flex-1 overflow-y-auto mt-3 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
           {filteredGridProducts.length === 0 ? (
             <div className="h-full flex flex-col justify-center items-center text-slate-400 py-12">
@@ -786,14 +670,16 @@ const BillingPOS = ({
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredGridProducts.map((p) => {
+                const bagKg = parseBagSizeKg(p.bagSize || "25kg");
                 const cartItem = cart.find((item) => item.productId === p.id);
                 const inCartQty = cartItem ? cartItem.qty : 0;
-                const remainStock = Math.max(0, (p.currentStock || 0) - inCartQty);
+                const remainStockBags = Math.max(0, (p.currentStock || 0) - inCartQty);
+                const remainStockKg = remainStockBags * bagKg;
+                const totalStockKg = (p.currentStock || 0) * bagKg;
                 const isOutOfStock = (p.currentStock || 0) <= 0;
-                const isLowStock = remainStock <= (p.minimumStock || 5);
+                const isLowStock = remainStockBags <= (p.minimumStock || 5);
                 const activePrice = billType === "Wholesale" ? (p.wholesaleRate || p.sellingRate) : p.sellingRate;
 
-                // Color-coded placeholder logic based on product name to keep UI extremely aesthetic
                 const initials = p.englishName.substring(0, 2).toUpperCase();
                 const colors = [
                   "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -813,7 +699,6 @@ const BillingPOS = ({
                       isOutOfStock ? "opacity-60 cursor-not-allowed" : ""
                     }`}
                   >
-                    {/* Product Image Area */}
                     <div className="h-24 w-full bg-slate-50 relative overflow-hidden flex items-center justify-center shrink-0 border-b border-slate-100">
                       {p.imageUrl ? (
                         <img
@@ -829,7 +714,6 @@ const BillingPOS = ({
                         </div>
                       )}
 
-                      {/* Stock Status Badge with Total, Sold, and Remaining Stock */}
                       <span className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border shadow-xs ${
                         isOutOfStock 
                           ? "bg-rose-600 text-white border-rose-600" 
@@ -842,17 +726,11 @@ const BillingPOS = ({
                         {isOutOfStock 
                           ? "OUT OF STOCK" 
                           : inCartQty > 0 
-                            ? `Sell: ${inCartQty} | Remain: ${remainStock} Bags` 
-                            : `Stock: ${p.currentStock} Bags`}
-                      </span>
-
-                      {/* Product Code Badge */}
-                      <span className="absolute bottom-1 left-1.5 bg-slate-900/60 text-white text-[8px] font-bold px-1 py-0.2 rounded font-mono">
-                        {p.productCode}
+                            ? `Sell: ${inCartQty} | Remain: ${remainStockBags} Bags (${remainStockKg} Kg)` 
+                            : `Stock: ${p.currentStock} Bags (${totalStockKg} Kg)`}
                       </span>
                     </div>
 
-                    {/* Product Details Area */}
                     <div className="p-2 flex flex-col justify-between flex-1 bg-white">
                       <div>
                         <h4 className="text-[11px] font-black text-slate-800 uppercase line-clamp-1 group-hover:text-blue-600 transition-colors">
@@ -880,9 +758,9 @@ const BillingPOS = ({
         </div>
       </div>
 
-      {/* QUICK CUSTOMER ADD MODAL */}
+      {/* QUICK NEW CUSTOMER MODAL */}
       {showQuickCustomerModal && (
-        <div id="quick-customer-modal" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative border border-slate-100">
             <button
               onClick={() => setShowQuickCustomerModal(false)}
@@ -891,73 +769,87 @@ const BillingPOS = ({
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-xs font-black text-slate-800 mb-4 uppercase tracking-wider border-b pb-2">Create Counter Customer</h3>
+            <h3 className="text-sm font-black text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
+              <UserPlus className="w-4 h-4 text-blue-600" />
+              Quick Add Customer
+            </h3>
 
-            <form onSubmit={handleQuickCustomerSubmit} className="space-y-4">
+            <form onSubmit={handleQuickCustomerSubmit} className="space-y-3">
               <div>
-                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Customer Name (English)</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase block mb-1">Customer Name (English)</label>
                 <input
                   type="text"
                   required
                   value={newCustName}
+                  data-no-transliterate="true"
                   onChange={(e) => setNewCustName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:bg-white uppercase"
+                  placeholder="e.g. Kannan"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold uppercase"
                 />
               </div>
 
               <div>
-                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                  {language === "Both" || language === "Dual" ? "Name (Tamil) / பெயர் (தமிழ்)" : "பெயர் (தமிழ்)"}
-                </label>
-                <TransliteratedInput
+                <label className="text-[10px] font-black text-slate-500 uppercase block mb-1">பெயர் (தமிழ்)</label>
+                <input
                   type="text"
                   value={newCustTamil}
+                  data-transliterate="true"
                   onChange={(e) => setNewCustTamil(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:bg-white"
-                  placeholder="e.g. ponni -> பொன்னி"
+                  placeholder="Phonetic (e.g. kannan)"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold"
                 />
               </div>
 
               <div>
-                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Mobile / Phone Number</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase block mb-1">Mobile Phone Number</label>
                 <input
                   type="text"
                   required
                   maxLength={10}
                   value={newCustPhone}
-                  onChange={(e) => setNewCustPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  placeholder="10-digit mobile number"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold font-mono focus:outline-none focus:bg-white"
+                  data-no-transliterate="true"
+                  onChange={(e) => setNewCustPhone(e.target.value)}
+                  placeholder="10-digit Mobile"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                  {language === "Both" || language === "Dual" ? "Delivery Address / முகவரி" : "Delivery Address"}
-                </label>
-                <TransliteratedTextArea
+                <label className="text-[10px] font-black text-slate-500 uppercase block mb-1">Address (Optional)</label>
+                <input
+                  type="text"
                   value={newCustAddress}
+                  data-no-transliterate="true"
                   onChange={(e) => setNewCustAddress(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:outline-none focus:bg-white h-16"
+                  placeholder="Erode, Tamil Nadu"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold uppercase"
                 />
               </div>
 
-              <button
-                type="submit"
-                id="quick-customer-submit"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs transition-colors uppercase tracking-widest cursor-pointer"
-              >
-                {t("save") || "Create Customer"}
-              </button>
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowQuickCustomerModal(false)}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs uppercase"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-md"
+                >
+                  Save & Select
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* SHORTCUTS HELP MODAL */}
+      {/* SHORTCUTS HELPER MODAL */}
       {showShortcutsModal && (
-        <div id="shortcuts-modal" className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex justify-center items-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl relative border border-slate-100">
             <button
               onClick={() => setShowShortcutsModal(false)}
               className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
@@ -965,32 +857,27 @@ const BillingPOS = ({
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-xs font-black text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-wider border-b pb-2">
-              <Keyboard className="w-4 h-4 text-blue-600 animate-bounce" />
-              Cashier Terminal Shortcuts
+            <h3 className="text-sm font-black text-slate-800 mb-3 uppercase tracking-wider flex items-center gap-2">
+              <Keyboard className="w-4 h-4 text-blue-600" />
+              Keyboard Shortcuts
             </h3>
 
-            <div className="space-y-2.5 text-[11px] font-bold text-slate-600 uppercase">
-              <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>F2</span> <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black text-slate-700">Clear / Reset Bill</span>
+            <div className="space-y-2 text-xs font-bold text-slate-700">
+              <div className="flex justify-between p-2 bg-slate-50 rounded-lg">
+                <span>Search / Scan Barcode</span>
+                <span className="bg-slate-200 px-1.5 py-0.5 rounded text-[10px] font-mono font-black">F9</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>F3</span> <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black text-slate-700">Select Customer</span>
+              <div className="flex justify-between p-2 bg-slate-50 rounded-lg">
+                <span>Save & Print Bill</span>
+                <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-black">F5</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>F4</span> <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black text-slate-700">Paid Amount Field</span>
+              <div className="flex justify-between p-2 bg-slate-50 rounded-lg">
+                <span>Hold Current Bill</span>
+                <span className="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-black">F7</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>F5</span> <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black text-slate-700">Save &amp; Print Ticket</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>F7</span> <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black text-slate-700">Hold active Bill</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>F9</span> <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black text-slate-700">Focus Flat Discount</span>
-              </div>
-              <div className="flex justify-between">
-                <span>ESC</span> <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black text-slate-700">Close Window</span>
+              <div className="flex justify-between p-2 bg-slate-50 rounded-lg">
+                <span>Clear Cart / Reset</span>
+                <span className="bg-slate-200 px-1.5 py-0.5 rounded text-[10px] font-mono font-black">F2</span>
               </div>
             </div>
           </div>
@@ -1000,5 +887,3 @@ const BillingPOS = ({
     </div>
   );
 };
-
-export { BillingPOS };

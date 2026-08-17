@@ -460,6 +460,21 @@ export const Masters = ({
   const currentMasterObj = masterTabConfig.find(m => m.id === activeMaster) || masterTabConfig[0];
   const ActiveIcon = currentMasterObj.icon;
 
+  const getProductStockKg = (p) => {
+    const method = (p.bagSize || "25kg").toLowerCase();
+    let bagKg = 25;
+    if (method.includes("75")) bagKg = 75;
+    else if (method.includes("70")) bagKg = 70;
+    else if (method.includes("50")) bagKg = 50;
+    else if (method.includes("26")) bagKg = 26;
+    else if (method.includes("25")) bagKg = 25;
+    else if (method.includes("10")) bagKg = 10;
+    else if (method.includes("5")) bagKg = 5;
+    else if (method.includes("2")) bagKg = 2;
+    else if (method.includes("1")) bagKg = 1;
+    return (p.currentStock || 0) * bagKg;
+  };
+
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase();
     return p.englishName.toLowerCase().includes(q) || (p.tamilName || "").toLowerCase().includes(q) || (p.productCode || "").toLowerCase().includes(q);
@@ -598,7 +613,7 @@ export const Masters = ({
                       <td className="p-3 text-right font-mono text-blue-600 font-black">₹{(p.sellingRate || 0).toFixed(2)}</td>
                       <td className="p-3 text-center">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-black border font-mono ${p.currentStock <= 5 ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-emerald-50 text-emerald-600 border-emerald-150"}`}>
-                          {p.currentStock} Bags
+                          {p.currentStock} Bags ({getProductStockKg(p)} Kg)
                         </span>
                       </td>
                       <td className="p-3 text-center">

@@ -72,7 +72,6 @@ export const BillingPOS = ({
     }
   }, []);
 
-  // Filter Categories list
   const categoriesList = useMemo(() => {
     const setCats = new Set(["All"]);
     products.forEach((p) => {
@@ -81,7 +80,6 @@ export const BillingPOS = ({
     return Array.from(setCats);
   }, [products]);
 
-  // Filter Products for Grid Selection
   const filteredGridProducts = useMemo(() => {
     return products.filter((p) => {
       const matchCat = selectedCategory === "All" || p.category === selectedCategory;
@@ -94,7 +92,6 @@ export const BillingPOS = ({
     });
   }, [products, selectedCategory, searchQuery]);
 
-  // Keyboard Shortcuts Handler
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") {
@@ -374,7 +371,7 @@ export const BillingPOS = ({
               type="button"
               id="pos-quick-customer-btn"
               onClick={() => setShowQuickCustomerModal(true)}
-              className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1 uppercase"
+              className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1 uppercase cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               {t("quickCustomer") || "New Customer"}
@@ -449,8 +446,10 @@ export const BillingPOS = ({
               <tbody className="divide-y divide-slate-100">
                 {cart.map((item, idx) => {
                   const masterProd = products.find((p) => p.id === item.productId);
+                  const bagKg = parseBagSizeKg(item.sellingMethod || (masterProd?.bagSize) || "25kg");
                   const totalProdStock = masterProd ? masterProd.currentStock : 0;
-                  const remainStock = Math.max(0, totalProdStock - item.qty);
+                  const remainStockBags = Math.max(0, totalProdStock - item.qty);
+                  const remainStockKg = remainStockBags * bagKg;
 
                   return (
                     <tr key={idx} className="hover:bg-slate-50/50">
@@ -464,7 +463,7 @@ export const BillingPOS = ({
                         </p>
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="text-[8px] font-bold text-blue-700 bg-blue-50 px-1 py-0.2 rounded border border-blue-150">
-                            Remain: {remainStock} Bags
+                            Remain: {remainStockBags} Bags ({remainStockKg} Kg)
                           </span>
                         </div>
                       </td>
@@ -528,7 +527,6 @@ export const BillingPOS = ({
 
         {/* CHECKOUT CALCULATIONS & BUTTONS */}
         <div className="space-y-3 shrink-0 pt-2 border-t border-slate-100">
-          
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[10px] font-bold text-slate-500 uppercase">Flat Discount (₹)</label>
@@ -553,7 +551,6 @@ export const BillingPOS = ({
             </div>
           </div>
 
-          {/* Grand Total Summary Box */}
           <div className="bg-slate-900 text-white p-3 rounded-xl space-y-1">
             <div className="flex justify-between items-center text-xs opacity-80">
               <span>SUBTOTAL</span>
@@ -571,7 +568,6 @@ export const BillingPOS = ({
             )}
           </div>
 
-          {/* Action Triggers */}
           <div className="space-y-1.5">
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -601,7 +597,6 @@ export const BillingPOS = ({
           </div>
         </div>
 
-        {/* Held Bills Bar */}
         {holdBills.length > 0 && (
           <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-none">
             <span className="text-[9px] font-black text-amber-700 uppercase shrink-0">HELD BILLS ({holdBills.length}):</span>
@@ -618,10 +613,8 @@ export const BillingPOS = ({
         )}
       </div>
 
-      {/* RIGHT SIDE: Product Selection Grid with Images (7 Columns) */}
+      {/* RIGHT SIDE: Product Selection Grid with Images */}
       <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col lg:h-full h-[650px] overflow-hidden">
-        
-        {/* Search Bar & Categories Filter */}
         <div className="space-y-3 shrink-0">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -649,7 +642,6 @@ export const BillingPOS = ({
             </button>
           </div>
 
-          {/* Dynamic Categories Scrollbar */}
           <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-slate-200">
             {categoriesList.map((cat) => (
               <button
@@ -668,7 +660,6 @@ export const BillingPOS = ({
           </div>
         </div>
 
-        {/* Product Card Grid */}
         <div className="flex-1 overflow-y-auto mt-3 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
           {filteredGridProducts.length === 0 ? (
             <div className="h-full flex flex-col justify-center items-center text-slate-400 py-12">
@@ -679,11 +670,14 @@ export const BillingPOS = ({
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredGridProducts.map((p) => {
+                const bagKg = parseBagSizeKg(p.bagSize || "25kg");
                 const cartItem = cart.find((item) => item.productId === p.id);
                 const inCartQty = cartItem ? cartItem.qty : 0;
-                const remainStock = Math.max(0, (p.currentStock || 0) - inCartQty);
+                const remainStockBags = Math.max(0, (p.currentStock || 0) - inCartQty);
+                const remainStockKg = remainStockBags * bagKg;
+                const totalStockKg = (p.currentStock || 0) * bagKg;
                 const isOutOfStock = (p.currentStock || 0) <= 0;
-                const isLowStock = remainStock <= (p.minimumStock || 5);
+                const isLowStock = remainStockBags <= (p.minimumStock || 5);
                 const activePrice = billType === "Wholesale" ? (p.wholesaleRate || p.sellingRate) : p.sellingRate;
 
                 const initials = p.englishName.substring(0, 2).toUpperCase();
@@ -705,7 +699,6 @@ export const BillingPOS = ({
                       isOutOfStock ? "opacity-60 cursor-not-allowed" : ""
                     }`}
                   >
-                    {/* Product Image Area */}
                     <div className="h-24 w-full bg-slate-50 relative overflow-hidden flex items-center justify-center shrink-0 border-b border-slate-100">
                       {p.imageUrl ? (
                         <img
@@ -721,7 +714,6 @@ export const BillingPOS = ({
                         </div>
                       )}
 
-                      {/* Stock Status Badge with Total, Sold, and Remaining Stock */}
                       <span className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border shadow-xs ${
                         isOutOfStock 
                           ? "bg-rose-600 text-white border-rose-600" 
@@ -734,12 +726,11 @@ export const BillingPOS = ({
                         {isOutOfStock 
                           ? "OUT OF STOCK" 
                           : inCartQty > 0 
-                            ? `Sell: ${inCartQty} | Remain: ${remainStock} Bags` 
-                            : `Stock: ${p.currentStock} Bags`}
+                            ? `Sell: ${inCartQty} | Remain: ${remainStockBags} Bags (${remainStockKg} Kg)` 
+                            : `Stock: ${p.currentStock} Bags (${totalStockKg} Kg)`}
                       </span>
                     </div>
 
-                    {/* Product Details Area */}
                     <div className="p-2 flex flex-col justify-between flex-1 bg-white">
                       <div>
                         <h4 className="text-[11px] font-black text-slate-800 uppercase line-clamp-1 group-hover:text-blue-600 transition-colors">
