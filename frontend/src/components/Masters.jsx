@@ -791,8 +791,11 @@ export const Masters = ({
                   <div>
                     <label className="block text-[9px] font-black text-slate-500 uppercase mb-1">Packing / Bag size</label>
                     <select value={pBagSize} onChange={(e) => setPBagSize(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold cursor-pointer">
-                      <option value="25kg">25 Kg Standard Bag</option>
+                      <option value="75kg">75 Kg Heavy Bag</option>
+                      <option value="70kg">70 Kg Jute Bag</option>
                       <option value="50kg">50 Kg Bulk Bag</option>
+                      <option value="26kg">26 Kg Standard Bag</option>
+                      <option value="25kg">25 Kg Standard Bag</option>
                       <option value="10kg">10 Kg Small Bag</option>
                       <option value="5kg">5 Kg Portable Bag</option>
                       <option value="1kg">1 Kg Retail Pack</option>

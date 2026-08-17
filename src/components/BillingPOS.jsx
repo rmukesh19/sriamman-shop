@@ -180,7 +180,10 @@ const BillingPOS = ({
   }, [cart, selectedCustomerId, billType, paymentType, paidAmount, globalDiscount, paymentSplit]);
 
   const parseBagSizeKg = (method) => {
+    if (method === "75kg") return 75;
+    if (method === "70kg") return 70;
     if (method === "50kg") return 50;
+    if (method === "26kg") return 26;
     if (method === "25kg") return 25;
     if (method === "10kg") return 10;
     if (method === "5kg") return 5;
@@ -567,7 +570,10 @@ const BillingPOS = ({
                         onChange={(e) => updateCartMethod(idx, e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[10px] focus:outline-none focus:bg-white cursor-pointer"
                       >
+                        <option value="75kg">75 Kg Bag</option>
+                        <option value="70kg">70 Kg Bag</option>
                         <option value="50kg">50 Kg Bag</option>
+                        <option value="26kg">26 Kg Bag</option>
                         <option value="25kg">25 Kg Bag</option>
                         <option value="10kg">10 Kg Bag</option>
                         <option value="5kg">5 Kg Bag</option>
@@ -780,9 +786,12 @@ const BillingPOS = ({
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredGridProducts.map((p) => {
-                const isLowStock = p.currentStock <= (p.minimumStock || 10);
-                const isOutOfStock = p.currentStock <= 0;
-                const activePrice = billType === "Wholesale" ? p.wholesaleRate : p.sellingRate;
+                const cartItem = cart.find((item) => item.productId === p.id);
+                const inCartQty = cartItem ? cartItem.qty : 0;
+                const remainStock = Math.max(0, (p.currentStock || 0) - inCartQty);
+                const isOutOfStock = (p.currentStock || 0) <= 0;
+                const isLowStock = remainStock <= (p.minimumStock || 5);
+                const activePrice = billType === "Wholesale" ? (p.wholesaleRate || p.sellingRate) : p.sellingRate;
 
                 // Color-coded placeholder logic based on product name to keep UI extremely aesthetic
                 const initials = p.englishName.substring(0, 2).toUpperCase();
@@ -820,15 +829,21 @@ const BillingPOS = ({
                         </div>
                       )}
 
-                      {/* Stock Status Badge */}
+                      {/* Stock Status Badge with Total, Sold, and Remaining Stock */}
                       <span className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border shadow-xs ${
                         isOutOfStock 
                           ? "bg-rose-600 text-white border-rose-600" 
-                          : isLowStock 
-                            ? "bg-amber-50 text-amber-700 border-amber-200 animate-pulse" 
-                            : "bg-emerald-50 text-emerald-700 border-emerald-150"
+                          : inCartQty > 0
+                            ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                            : isLowStock 
+                              ? "bg-amber-50 text-amber-700 border-amber-200 animate-pulse" 
+                              : "bg-emerald-50 text-emerald-700 border-emerald-150"
                       }`}>
-                        {isOutOfStock ? "OUT OF STOCK" : isLowStock ? `${p.currentStock} bags left` : `In Stock: ${p.currentStock}`}
+                        {isOutOfStock 
+                          ? "OUT OF STOCK" 
+                          : inCartQty > 0 
+                            ? `Sell: ${inCartQty} | Remain: ${remainStock} Bags` 
+                            : `Stock: ${p.currentStock} Bags`}
                       </span>
 
                       {/* Product Code Badge */}
