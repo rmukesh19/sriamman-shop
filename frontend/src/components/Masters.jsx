@@ -460,7 +460,7 @@ export const Masters = ({
   const currentMasterObj = masterTabConfig.find(m => m.id === activeMaster) || masterTabConfig[0];
   const ActiveIcon = currentMasterObj.icon;
 
-  const getProductStockKg = (p) => {
+  const formatStockString = (p) => {
     const method = (p.bagSize || "25kg").toLowerCase();
     let bagKg = 25;
     if (method.includes("75")) bagKg = 75;
@@ -472,7 +472,15 @@ export const Masters = ({
     else if (method.includes("5")) bagKg = 5;
     else if (method.includes("2")) bagKg = 2;
     else if (method.includes("1")) bagKg = 1;
-    return (p.currentStock || 0) * bagKg;
+
+    const bags = Number(p.currentStock) || 0;
+    const loose = Number(p.looseKg) || 0;
+    const totalKg = p.totalStockKg !== undefined ? p.totalStockKg : (bags * bagKg + loose);
+
+    if (loose > 0) {
+      return `${bags} Bags + ${loose} Kg (${totalKg} Kg)`;
+    }
+    return `${bags} Bags (${totalKg} Kg)`;
   };
 
   const filteredProducts = products.filter((p) => {
@@ -613,7 +621,7 @@ export const Masters = ({
                       <td className="p-3 text-right font-mono text-blue-600 font-black">₹{(p.sellingRate || 0).toFixed(2)}</td>
                       <td className="p-3 text-center">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-black border font-mono ${p.currentStock <= 5 ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-emerald-50 text-emerald-600 border-emerald-150"}`}>
-                          {p.currentStock} Bags ({getProductStockKg(p)} Kg)
+                          {formatStockString(p)}
                         </span>
                       </td>
                       <td className="p-3 text-center">

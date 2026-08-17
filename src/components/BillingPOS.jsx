@@ -262,13 +262,11 @@ export const BillingPOS = ({
   const additionalDiscount = Number(globalDiscount) || 0;
   const totalDiscount = itemDiscounts + additionalDiscount;
   const grandTotal = Math.max(Math.round(subtotal - totalDiscount), 0);
-  const gstAmount = 0;
 
   const parsedPaid = Number(paidAmount) || 0;
   let splitCash = Number(paymentSplit?.cash) || 0;
   let splitUpi = Number(paymentSplit?.upi) || 0;
   let splitCard = Number(paymentSplit?.card) || 0;
-  let splitCredit = Number(paymentSplit?.credit) || 0;
   let splitTotalPaid = splitCash + splitUpi + splitCard;
 
   let actualPaid = 0;
@@ -360,7 +358,7 @@ export const BillingPOS = ({
   return (
     <div id="billing-pos-root" className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:h-[calc(100vh-140px)] h-auto select-none">
       
-      {/* LEFT SIDE: POS Cart and Checkout Controls (5 Columns) */}
+      {/* LEFT SIDE: POS Cart and Checkout Controls */}
       <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col lg:h-full h-[550px] overflow-hidden">
         
         {/* Customer select and Quick add */}
@@ -447,9 +445,16 @@ export const BillingPOS = ({
                 {cart.map((item, idx) => {
                   const masterProd = products.find((p) => p.id === item.productId);
                   const bagKg = parseBagSizeKg(item.sellingMethod || (masterProd?.bagSize) || "25kg");
-                  const totalProdStock = masterProd ? masterProd.currentStock : 0;
-                  const remainStockBags = Math.max(0, totalProdStock - item.qty);
-                  const remainStockKg = remainStockBags * bagKg;
+                  const curBags = masterProd ? Number(masterProd.currentStock) || 0 : 0;
+                  const curLoose = masterProd ? Number(masterProd.looseKg) || 0 : 0;
+                  const totalKg = masterProd?.totalStockKg !== undefined ? masterProd.totalStockKg : (curBags * bagKg + curLoose);
+
+                  const isLooseSale = item.sellingMethod === "custom" || item.sellingMethod === "1kg";
+                  const soldKg = isLooseSale ? Number(item.qty) || 1 : (Number(item.qty) || 1) * parseBagSizeKg(item.sellingMethod);
+
+                  const remainKg = Math.max(0, totalKg - soldKg);
+                  const remainBags = Math.floor(remainKg / bagKg);
+                  const remainLoose = remainKg % bagKg;
 
                   return (
                     <tr key={idx} className="hover:bg-slate-50/50">
@@ -463,7 +468,7 @@ export const BillingPOS = ({
                         </p>
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="text-[8px] font-bold text-blue-700 bg-blue-50 px-1 py-0.2 rounded border border-blue-150">
-                            Remain: {remainStockBags} Bags ({remainStockKg} Kg)
+                            Remain: {remainBags} Bags {remainLoose > 0 ? `+ ${remainLoose} Kg ` : ""}({remainKg} Kg)
                           </span>
                         </div>
                       </td>
@@ -481,8 +486,8 @@ export const BillingPOS = ({
                           <option value="10kg">10 Kg Bag</option>
                           <option value="5kg">5 Kg Bag</option>
                           <option value="2kg">2 Kg Pack</option>
-                          <option value="1kg">1 Kg Pack</option>
-                          <option value="custom">Custom Weight</option>
+                          <option value="1kg">1 Kg Retail Pack</option>
+                          <option value="custom">Custom Loose KG</option>
                         </select>
                       </td>
                       <td className="p-2">
@@ -496,14 +501,14 @@ export const BillingPOS = ({
                       <td className="p-2">
                         <input
                           type="number"
-                          step={item.sellingMethod === "custom" ? "0.1" : "1"}
+                          step={item.sellingMethod === "custom" || item.sellingMethod === "1kg" ? "0.1" : "1"}
                           value={item.qty}
                           onChange={(e) => updateCartQty(idx, Number(e.target.value))}
                           className="w-full bg-slate-50 border border-slate-200 text-center rounded py-0.5 font-bold text-slate-700 text-[11px] focus:outline-none focus:bg-white"
                         />
                       </td>
                       <td className="p-2 text-center text-[11px] font-bold text-slate-600 font-mono">
-                        {item.totalWeightKg || (item.sellingMethod === "custom" ? item.qty : item.qty * (item.bagSizeKg || 1))} Kg
+                        {item.totalWeightKg || (item.sellingMethod === "custom" || item.sellingMethod === "1kg" ? item.qty : item.qty * (item.bagSizeKg || 1))} Kg
                       </td>
                       <td className="p-2 text-right font-black text-slate-800 text-[11px]">
                         ₹{item.total}
@@ -673,11 +678,20 @@ export const BillingPOS = ({
                 const bagKg = parseBagSizeKg(p.bagSize || "25kg");
                 const cartItem = cart.find((item) => item.productId === p.id);
                 const inCartQty = cartItem ? cartItem.qty : 0;
-                const remainStockBags = Math.max(0, (p.currentStock || 0) - inCartQty);
-                const remainStockKg = remainStockBags * bagKg;
-                const totalStockKg = (p.currentStock || 0) * bagKg;
-                const isOutOfStock = (p.currentStock || 0) <= 0;
-                const isLowStock = remainStockBags <= (p.minimumStock || 5);
+                
+                const curBags = Number(p.currentStock) || 0;
+                const curLoose = Number(p.looseKg) || 0;
+                const totalKg = p.totalStockKg !== undefined ? p.totalStockKg : (curBags * bagKg + curLoose);
+
+                const isLooseSale = cartItem && (cartItem.sellingMethod === "custom" || cartItem.sellingMethod === "1kg");
+                const soldKg = cartItem ? (isLooseSale ? inCartQty : inCartQty * parseBagSizeKg(cartItem.sellingMethod)) : 0;
+
+                const remainKg = Math.max(0, totalKg - soldKg);
+                const remainBags = Math.floor(remainKg / bagKg);
+                const remainLoose = remainKg % bagKg;
+
+                const isOutOfStock = totalKg <= 0;
+                const isLowStock = remainBags <= (p.minimumStock || 5);
                 const activePrice = billType === "Wholesale" ? (p.wholesaleRate || p.sellingRate) : p.sellingRate;
 
                 const initials = p.englishName.substring(0, 2).toUpperCase();
@@ -726,8 +740,8 @@ export const BillingPOS = ({
                         {isOutOfStock 
                           ? "OUT OF STOCK" 
                           : inCartQty > 0 
-                            ? `Sell: ${inCartQty} | Remain: ${remainStockBags} Bags (${remainStockKg} Kg)` 
-                            : `Stock: ${p.currentStock} Bags (${totalStockKg} Kg)`}
+                            ? `Sell: ${inCartQty} | Remain: ${remainBags} Bags ${remainLoose > 0 ? `+ ${remainLoose}Kg ` : ""}(${remainKg} Kg)` 
+                            : `Stock: ${curBags} Bags ${curLoose > 0 ? `+ ${curLoose}Kg ` : ""}(${totalKg} Kg)`}
                       </span>
                     </div>
 
