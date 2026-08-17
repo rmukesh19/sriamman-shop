@@ -24,37 +24,18 @@ export const createBill = async (req, res) => {
     status: "Active"
   };
 
-  const parseBagSizeKg = (method) => {
-    const m = (method || "").toLowerCase();
-    if (m.includes("75")) return 75;
-    if (m.includes("70")) return 70;
-    if (m.includes("50")) return 50;
-    if (m.includes("26")) return 26;
-    if (m.includes("25")) return 25;
-    if (m.includes("10")) return 10;
-    if (m.includes("5")) return 5;
-    if (m.includes("2")) return 2;
-    if (m.includes("1")) return 1;
-    return 25;
-  };
-
   if (Array.isArray(newBill.items)) {
     newBill.items.forEach((item) => {
       const prodIndex = db.products.findIndex((p) => p.id === item.productId);
       if (prodIndex !== -1) {
         const prod = db.products[prodIndex];
-        const bagKg = parseBagSizeKg(prod.bagSize || "25kg");
-        const isLoose = item.sellingMethod === "custom" || item.sellingMethod === "1kg";
-        const soldKg = isLoose ? (Number(item.qty) || 1) : (Number(item.qty) || 1) * parseBagSizeKg(item.sellingMethod || prod.bagSize || "25kg");
+        const bagKg = item.bagSizeKg || (prod.bagSize ? parseInt(prod.bagSize) : 25) || 25;
+        const method = item.sellingMethod || "25kg";
+        const bagsToDeduct = (method === "custom" || method === "1kg")
+          ? (Number(item.qty) || 1) / bagKg
+          : (Number(item.qty) || 1);
 
-        const curBags = Number(prod.currentStock) || 0;
-        const curLoose = Number(prod.looseKg) || 0;
-        const currentTotalKg = curBags * bagKg + curLoose;
-        const newTotalKg = Math.max(0, currentTotalKg - soldKg);
-
-        prod.currentStock = Math.floor(newTotalKg / bagKg);
-        prod.looseKg = newTotalKg % bagKg;
-        prod.totalStockKg = newTotalKg;
+        db.products[prodIndex].currentStock = Math.max(0, Number((db.products[prodIndex].currentStock - bagsToDeduct).toFixed(3)));
       }
     });
   }
@@ -168,7 +149,14 @@ export const cancelBill = async (req, res) => {
   bill.items.forEach((item) => {
     const prodIndex = db.products.findIndex((p) => p.id === item.productId);
     if (prodIndex !== -1) {
-      db.products[prodIndex].currentStock += item.qty;
+      const prod = db.products[prodIndex];
+      const bagKg = item.bagSizeKg || (prod.bagSize ? parseInt(prod.bagSize) : 25) || 25;
+      const method = item.sellingMethod || "25kg";
+      const bagsToRestore = (method === "custom" || method === "1kg")
+        ? (Number(item.qty) || 1) / bagKg
+        : (Number(item.qty) || 1);
+
+      db.products[prodIndex].currentStock = Math.max(0, Number((db.products[prodIndex].currentStock + bagsToRestore).toFixed(3)));
     }
   });
 

@@ -145,14 +145,19 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
 
               <div className="space-y-1 my-1 text-[9px]">
                 {bill.items?.map((item, index) => {
-                  const methodStr = item.sellingMethod === "custom" ? `${item.qty}Kg` : (item.sellingMethod || "25kg").toUpperCase();
+                  const methodStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                    ? `${item.qty} Kg Loose`
+                    : (item.sellingMethod || "25kg").toUpperCase();
+                  const qtyStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                    ? `${item.qty} Kg`
+                    : `${item.qty} Bag`;
                   return (
                     <div key={index} className="grid grid-cols-12 gap-0.5">
                       <span className="col-span-5 font-bold truncate">
                         {getItemName(item)}
                       </span>
                       <span className="col-span-3 text-center text-[8px] text-slate-500">{methodStr}</span>
-                      <span className="col-span-2 text-center font-bold">{item.qty}</span>
+                      <span className="col-span-2 text-center font-bold">{qtyStr}</span>
                       <span className="col-span-2 text-right font-bold">₹{item.total || (item.qty * item.rate - item.discount)}</span>
                     </div>
                   );
@@ -272,16 +277,28 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
     /* Cart Items */
   }
               <div className="space-y-2 text-[10px]">
-                {bill.items?.map((item, index) => <div key={index} className="grid grid-cols-12 gap-1">
-                    <div className="col-span-6">
-                      <p className="font-bold text-slate-800 leading-tight">
-                        {getItemName(item)}
-                      </p>
+                {bill.items?.map((item, index) => {
+                  const qtyStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                    ? `${item.qty} Kg`
+                    : `${item.qty} Bag`;
+                  const lineTotal = item.total || (item.qty * item.rate - item.discount);
+
+                  return (
+                    <div key={index} className="grid grid-cols-12 gap-1">
+                      <div className="col-span-6">
+                        <p className="font-bold text-slate-800 leading-tight">
+                          {getItemName(item)}
+                        </p>
+                        <span className="text-[8px] text-slate-400 font-mono">
+                          {(item.sellingMethod === "custom" || item.sellingMethod === "1kg") ? "Loose Kg" : (item.sellingMethod || "25kg").toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="col-span-2 text-center font-bold">{qtyStr}</span>
+                      <span className="col-span-2 text-right">₹{item.rate}</span>
+                      <span className="col-span-2 text-right font-bold">₹{lineTotal}</span>
                     </div>
-                    <span className="col-span-2 text-center font-bold">{item.qty}</span>
-                    <span className="col-span-2 text-right">{item.rate}</span>
-                    <span className="col-span-2 text-right font-bold">{item.qty * item.rate - item.discount}</span>
-                  </div>)}
+                  );
+                })}
               </div>
 
               <div className="border-t border-dashed border-slate-300 my-3" />
@@ -414,18 +431,27 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-[11px] text-slate-700">
                   {bill.items?.map((item, idx) => {
-    const lineTotal = item.total || (item.qty * item.rate - (item.discount || 0));
-    return <tr key={idx}>
+                    const lineTotal = item.total || (item.qty * item.rate - (item.discount || 0));
+                    const methodStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                      ? "Loose Kg"
+                      : (item.sellingMethod || "25kg").toUpperCase();
+                    const qtyStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                      ? `${item.qty} Kg`
+                      : `${item.qty} Bag`;
+
+                    return (
+                      <tr key={idx}>
                         <td className="p-2.5 text-center text-slate-400">{idx + 1}</td>
                         <td className="p-2.5 font-bold">
                           {getItemName(item)}
                         </td>
-                        <td className="p-2.5 text-center font-mono">{item.sellingMethod || "25kg"}</td>
-                        <td className="p-2.5 text-right font-bold">{item.qty}</td>
-                        <td className="p-2.5 text-right">{item.rate}</td>
-                        <td className="p-2.5 text-right font-bold text-slate-900">{lineTotal}</td>
-                      </tr>;
-  })}
+                        <td className="p-2.5 text-center font-mono">{methodStr}</td>
+                        <td className="p-2.5 text-right font-bold">{qtyStr}</td>
+                        <td className="p-2.5 text-right">₹{item.rate}</td>
+                        <td className="p-2.5 text-right font-bold text-slate-900">₹{lineTotal}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 

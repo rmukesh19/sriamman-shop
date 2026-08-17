@@ -460,27 +460,37 @@ export const Masters = ({
   const currentMasterObj = masterTabConfig.find(m => m.id === activeMaster) || masterTabConfig[0];
   const ActiveIcon = currentMasterObj.icon;
 
-  const formatStockString = (p) => {
-    const method = (p.bagSize || "25kg").toLowerCase();
-    let bagKg = 25;
-    if (method.includes("75")) bagKg = 75;
-    else if (method.includes("70")) bagKg = 70;
-    else if (method.includes("50")) bagKg = 50;
-    else if (method.includes("26")) bagKg = 26;
-    else if (method.includes("25")) bagKg = 25;
-    else if (method.includes("10")) bagKg = 10;
-    else if (method.includes("5")) bagKg = 5;
-    else if (method.includes("2")) bagKg = 2;
-    else if (method.includes("1")) bagKg = 1;
+  const parseBagSizeKg = (method) => {
+    const m = (method || "").toLowerCase();
+    if (m.includes("75")) return 75;
+    if (m.includes("70")) return 70;
+    if (m.includes("50")) return 50;
+    if (m.includes("26")) return 26;
+    if (m.includes("25")) return 25;
+    if (m.includes("10")) return 10;
+    if (m.includes("5")) return 5;
+    if (m.includes("2")) return 2;
+    if (m.includes("1")) return 1;
+    return 25;
+  };
 
-    const bags = Number(p.currentStock) || 0;
-    const loose = Number(p.looseKg) || 0;
-    const totalKg = p.totalStockKg !== undefined ? p.totalStockKg : (bags * bagKg + loose);
-
-    if (loose > 0) {
-      return `${bags} Bags + ${loose} Kg (${totalKg} Kg)`;
+  const formatStockBagsKg = (bagsCount, bagSizeStr) => {
+    const bagKg = parseBagSizeKg(bagSizeStr);
+    const totalKg = Math.round((Number(bagsCount) || 0) * bagKg);
+    const fullBags = Math.floor(totalKg / bagKg);
+    const remainKg = totalKg % bagKg;
+    
+    if (remainKg === 0) {
+      return `${fullBags} Bags (${totalKg} Kg)`;
+    } else if (fullBags === 0) {
+      return `${remainKg} Kg Loose (${totalKg} Kg)`;
+    } else {
+      return `${fullBags} Bags + ${remainKg} Kg (${totalKg} Kg)`;
     }
-    return `${bags} Bags (${totalKg} Kg)`;
+  };
+
+  const getProductStockKg = (p) => {
+    return (p.currentStock || 0) * parseBagSizeKg(p.bagSize);
   };
 
   const filteredProducts = products.filter((p) => {
@@ -621,7 +631,7 @@ export const Masters = ({
                       <td className="p-3 text-right font-mono text-blue-600 font-black">₹{(p.sellingRate || 0).toFixed(2)}</td>
                       <td className="p-3 text-center">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-black border font-mono ${p.currentStock <= 5 ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-emerald-50 text-emerald-600 border-emerald-150"}`}>
-                          {formatStockString(p)}
+                          {formatStockBagsKg(p.currentStock, p.bagSize)}
                         </span>
                       </td>
                       <td className="p-3 text-center">
@@ -824,6 +834,14 @@ export const Masters = ({
                       <option value="1kg">1 Kg Retail Pack</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Automatic Live Bag/Kg Stock Calculation Display */}
+                <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-2.5 text-center text-xs font-black text-emerald-900 flex justify-between items-center shadow-xs">
+                  <span className="text-[10px] uppercase tracking-wider text-emerald-700 font-bold">Auto Stock Calculation:</span>
+                  <span className="font-mono text-emerald-800">
+                    {formatStockBagsKg(pCurrentStock || pOpening || 0, pBagSize)}
+                  </span>
                 </div>
 
                 <div>

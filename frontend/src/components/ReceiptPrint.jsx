@@ -20,6 +20,32 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
       maximumFractionDigits: 2
     }).format(num || 0);
   };
+
+  const getItemName = (item) => {
+    if (language === "Both" || language === "Dual") {
+      if (item.englishName && item.tamilName && item.englishName !== item.tamilName) {
+        return `${item.englishName} (${item.tamilName})`;
+      }
+      return item.englishName || item.tamilName || "";
+    }
+    if (language === "Tamil") {
+      return item.tamilName || item.englishName || "";
+    }
+    return item.englishName || item.tamilName || "";
+  };
+
+  const getCustName = (b) => {
+    if (language === "Both" || language === "Dual") {
+      if (b.customerName && b.customerTamilName && b.customerName !== b.customerTamilName) {
+        return `${b.customerName} (${b.customerTamilName})`;
+      }
+      return b.customerName || b.customerTamilName || "";
+    }
+    if (language === "Tamil") {
+      return b.customerTamilName || b.customerName || "";
+    }
+    return b.customerName || b.customerTamilName || "";
+  };
   const handlePrint = () => {
     window.print();
   };
@@ -105,28 +131,33 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
                   <span>{bill.date?.substring(0, 10)}</span>
                   <span>{bill.date?.substring(11, 16)}</span>
                 </div>
-                <div>Cust: <b>{language === "English" ? bill.customerName : bill.customerTamilName || bill.customerName}</b></div>
+                <div>Cust: <b>{getCustName(bill)}</b></div>
               </div>
 
               <div className="border-t border-dashed border-slate-300 my-2" />
 
               <div className="grid grid-cols-12 gap-0.5 font-bold text-[9px] border-b pb-1">
-                <span className="col-span-5">Item</span>
-                <span className="col-span-3 text-center">Pack/Wt</span>
-                <span className="col-span-2 text-center">Qty</span>
-                <span className="col-span-2 text-right">Total</span>
+                <span className="col-span-5">{language === "Both" || language === "Dual" ? "Item / பொருள்" : language === "Tamil" ? "பொருள்" : "Item"}</span>
+                <span className="col-span-3 text-center">{language === "Both" || language === "Dual" ? "Pack / அளவு" : language === "Tamil" ? "அளவு" : "Pack/Wt"}</span>
+                <span className="col-span-2 text-center">{language === "Both" || language === "Dual" ? "Qty / எண்ணிக்கை" : language === "Tamil" ? "எண்ணிக்கை" : "Qty"}</span>
+                <span className="col-span-2 text-right">{language === "Both" || language === "Dual" ? "Total / மொத்தம்" : language === "Tamil" ? "மொத்தம்" : "Total"}</span>
               </div>
 
               <div className="space-y-1 my-1 text-[9px]">
                 {bill.items?.map((item, index) => {
-                  const methodStr = item.sellingMethod === "custom" ? `${item.qty}Kg` : (item.sellingMethod || "25kg").toUpperCase();
+                  const methodStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                    ? `${item.qty} Kg Loose`
+                    : (item.sellingMethod || "25kg").toUpperCase();
+                  const qtyStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                    ? `${item.qty} Kg`
+                    : `${item.qty} Bag`;
                   return (
                     <div key={index} className="grid grid-cols-12 gap-0.5">
                       <span className="col-span-5 font-bold truncate">
-                        {language === "English" ? item.englishName : item.tamilName || item.englishName}
+                        {getItemName(item)}
                       </span>
                       <span className="col-span-3 text-center text-[8px] text-slate-500">{methodStr}</span>
-                      <span className="col-span-2 text-center font-bold">{item.qty}</span>
+                      <span className="col-span-2 text-center font-bold">{qtyStr}</span>
                       <span className="col-span-2 text-right font-bold">₹{item.total || (item.qty * item.rate - item.discount)}</span>
                     </div>
                   );
@@ -147,10 +178,34 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
                   </div>
                 )}
                 <div className="flex justify-between text-xs font-black pt-1 border-t border-dashed">
-                  <span>NET TOTAL:</span>
+                  <span>{language === "Both" || language === "Dual" ? "Total / மொத்தம்:" : language === "Tamil" ? "மொத்தம்:" : "TOTAL AMOUNT:"}</span>
                   <span>{fmt(bill.total)}</span>
                 </div>
-                <div className="flex justify-between text-[9px] text-slate-600 pt-0.5">
+                <div className="flex justify-between text-[9px] text-slate-700 pt-0.5">
+                  <span>{language === "Both" || language === "Dual" ? "Paid / செலுத்தியது:" : language === "Tamil" ? "செலுத்தியது:" : "Paid Amount:"}</span>
+                  <span className="font-bold">{fmt(bill.paidAmount || 0)}</span>
+                </div>
+                {bill.paymentType === "Split" && bill.paymentSplit && (
+                  <div className="my-1 py-1 border-y border-slate-200 text-[8px] space-y-0.5 font-bold">
+                    <div className="text-emerald-700 flex justify-between">
+                      <span>• Cash Paid:</span>
+                      <span>{fmt(bill.paymentSplit.cash || 0)}</span>
+                    </div>
+                    <div className="text-blue-700 flex justify-between">
+                      <span>• Bank/UPI Paid:</span>
+                      <span>{fmt((bill.paymentSplit.bank || 0) + (bill.paymentSplit.upi || 0) + (bill.paymentSplit.card || 0))}</span>
+                    </div>
+                    <div className="text-rose-700 flex justify-between">
+                      <span>• Balance Credit:</span>
+                      <span>{fmt(bill.balance || 0)}</span>
+                    </div>
+                  </div>
+                )}
+                <div className={`flex justify-between text-[9px] ${bill.balance > 0 ? "text-rose-600 font-bold" : "text-slate-600"} pt-0.5`}>
+                  <span>{language === "Both" || language === "Dual" ? "Balance / நிலுவை:" : language === "Tamil" ? "நிலுவை:" : "Balance Due / Credit:"}</span>
+                  <span>{fmt(bill.balance || 0)}</span>
+                </div>
+                <div className="flex justify-between text-[9px] text-slate-500 pt-0.5">
                   <span>Mode:</span>
                   <span className="font-bold">{bill.paymentType}</span>
                 </div>
@@ -200,7 +255,7 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
                   <span>Time: {bill.date?.substring(11, 16)}</span>
                 </div>
                 <div className="text-slate-700">
-                  Customer: <span className="font-bold">{language === "English" ? bill.customerName : bill.customerTamilName || bill.customerName}</span>
+                  Customer: <span className="font-bold">{getCustName(bill)}</span>
                 </div>
               </div>
 
@@ -210,10 +265,10 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
     /* Item headers */
   }
               <div className="grid grid-cols-12 gap-1 font-bold text-[10px] text-slate-900 mb-1">
-                <span className="col-span-6">Item</span>
-                <span className="col-span-2 text-center">Qty</span>
-                <span className="col-span-2 text-right">Rate</span>
-                <span className="col-span-2 text-right">Total</span>
+                <span className="col-span-6">{language === "Both" || language === "Dual" ? "Item / பொருள்" : language === "Tamil" ? "பொருள்" : "Item"}</span>
+                <span className="col-span-2 text-center">{language === "Both" || language === "Dual" ? "Qty / அளவு" : language === "Tamil" ? "அளவு" : "Qty"}</span>
+                <span className="col-span-2 text-right">{language === "Both" || language === "Dual" ? "Rate / விலை" : language === "Tamil" ? "விலை" : "Rate"}</span>
+                <span className="col-span-2 text-right">{language === "Both" || language === "Dual" ? "Total / மொத்தம்" : language === "Tamil" ? "மொத்தம்" : "Total"}</span>
               </div>
 
               <div className="border-b border-slate-200 mb-2" />
@@ -222,16 +277,28 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
     /* Cart Items */
   }
               <div className="space-y-2 text-[10px]">
-                {bill.items?.map((item, index) => <div key={index} className="grid grid-cols-12 gap-1">
-                    <div className="col-span-6">
-                      <p className="font-bold text-slate-800 leading-tight">
-                        {language === "English" ? item.englishName : item.tamilName || item.englishName}
-                      </p>
+                {bill.items?.map((item, index) => {
+                  const qtyStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                    ? `${item.qty} Kg`
+                    : `${item.qty} Bag`;
+                  const lineTotal = item.total || (item.qty * item.rate - item.discount);
+
+                  return (
+                    <div key={index} className="grid grid-cols-12 gap-1">
+                      <div className="col-span-6">
+                        <p className="font-bold text-slate-800 leading-tight">
+                          {getItemName(item)}
+                        </p>
+                        <span className="text-[8px] text-slate-400 font-mono">
+                          {(item.sellingMethod === "custom" || item.sellingMethod === "1kg") ? "Loose Kg" : (item.sellingMethod || "25kg").toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="col-span-2 text-center font-bold">{qtyStr}</span>
+                      <span className="col-span-2 text-right">₹{item.rate}</span>
+                      <span className="col-span-2 text-right font-bold">₹{lineTotal}</span>
                     </div>
-                    <span className="col-span-2 text-center font-bold">{item.qty}</span>
-                    <span className="col-span-2 text-right">{item.rate}</span>
-                    <span className="col-span-2 text-right font-bold">{item.qty * item.rate - item.discount}</span>
-                  </div>)}
+                  );
+                })}
               </div>
 
               <div className="border-t border-dashed border-slate-300 my-3" />
@@ -249,21 +316,38 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
                     <span>- {fmt(bill.discount)}</span>
                   </div>}
                 <div className="flex justify-between text-xs font-black text-slate-900 pt-1 border-t border-dashed border-slate-200">
-                  <span>GRAND TOTAL:</span>
+                  <span>{language === "Both" || language === "Dual" ? "Total Amount / மொத்தத் தொகை:" : language === "Tamil" ? "மொத்தத் தொகை:" : "Total Amount:"}</span>
                   <span>{fmt(bill.total)}</span>
+                </div>
+                <div className="flex justify-between text-slate-700">
+                  <span>{language === "Both" || language === "Dual" ? "Paid Amount / செலுத்திய தொகை:" : language === "Tamil" ? "செலுத்திய தொகை:" : "Paid Amount:"}</span>
+                  <span className="font-bold">{fmt(bill.paidAmount || 0)}</span>
+                </div>
+                {bill.paymentType === "Split" && bill.paymentSplit && (
+                  <div className="my-2 p-2 bg-slate-50 rounded-lg border border-slate-200 text-[10px] space-y-1 font-mono">
+                    <p className="font-bold text-slate-800 text-[9px] uppercase tracking-wider">Split Payment Breakdown:</p>
+                    <div className="text-emerald-700 font-bold flex justify-between">
+                      <span>Cash Paid:</span>
+                      <span>{fmt(bill.paymentSplit.cash || 0)}</span>
+                    </div>
+                    <div className="text-blue-700 font-bold flex justify-between">
+                      <span>Bank/UPI Paid:</span>
+                      <span>{fmt((bill.paymentSplit.bank || 0) + (bill.paymentSplit.upi || 0) + (bill.paymentSplit.card || 0))}</span>
+                    </div>
+                    <div className="text-rose-700 font-bold flex justify-between">
+                      <span>Balance Due / Credit:</span>
+                      <span>{fmt(bill.balance || 0)}</span>
+                    </div>
+                  </div>
+                )}
+                <div className={`flex justify-between ${bill.balance > 0 ? "text-rose-600 font-bold" : "text-slate-700"}`}>
+                  <span>{language === "Both" || language === "Dual" ? "Balance Due / Credit / நிலுவைத் தொகை:" : language === "Tamil" ? "நிலுவைத் தொகை:" : "Balance Due / Credit:"}</span>
+                  <span>{fmt(bill.balance || 0)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600 mt-1">
                   <span>Payment Mode:</span>
                   <span className="font-bold">{bill.paymentType}</span>
                 </div>
-                {bill.paidAmount > 0 && <div className="flex justify-between text-slate-700">
-                    <span>Paid Amount:</span>
-                    <span>{fmt(bill.paidAmount)}</span>
-                  </div>}
-                {bill.balance > 0 && <div className="flex justify-between text-rose-600">
-                    <span>Balance Due:</span>
-                    <span className="font-bold">{fmt(bill.balance)}</span>
-                  </div>}
               </div>
 
               <div className="border-t border-dashed border-slate-300 my-4" />
@@ -321,7 +405,7 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
               <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-200 font-semibold">
                 <div>
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">BILL TO:</h3>
-                  <p className="font-bold text-slate-800 text-sm">{language === "English" ? bill.customerName : bill.customerTamilName || bill.customerName}</p>
+                  <p className="font-bold text-slate-800 text-sm">{getCustName(bill)}</p>
                   <p className="text-slate-500 mt-1">Cashier: {bill.customerName}</p>
                 </div>
                 <div className="text-right">
@@ -338,27 +422,36 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
                 <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-[10px]">
                   <tr>
                     <th className="p-2.5 text-center w-10">S.No</th>
-                    <th className="p-2.5">Description of Rice Item</th>
-                    <th className="p-2.5 text-center">Pack / Method</th>
-                    <th className="p-2.5 text-right">Qty / Bags</th>
-                    <th className="p-2.5 text-right">Rate</th>
-                    <th className="p-2.5 text-right">Total Amount</th>
+                    <th className="p-2.5">{language === "Both" || language === "Dual" ? "Description of Rice Item / அரிசி விவரம்" : language === "Tamil" ? "அரிசி விவரம்" : "Description of Rice Item"}</th>
+                    <th className="p-2.5 text-center">{language === "Both" || language === "Dual" ? "Pack / அளவு" : language === "Tamil" ? "அளவு" : "Pack / Method"}</th>
+                    <th className="p-2.5 text-right">{language === "Both" || language === "Dual" ? "Qty / Bags / மூட்டை எண்ணிக்கை" : language === "Tamil" ? "மூட்டை எண்ணிக்கை" : "Qty / Bags"}</th>
+                    <th className="p-2.5 text-right">{language === "Both" || language === "Dual" ? "Rate / விலை" : language === "Tamil" ? "விலை" : "Rate"}</th>
+                    <th className="p-2.5 text-right">{language === "Both" || language === "Dual" ? "Total Amount / மொத்த தொகை" : language === "Tamil" ? "மொத்த தொகை" : "Total Amount"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-[11px] text-slate-700">
                   {bill.items?.map((item, idx) => {
-    const lineTotal = item.total || (item.qty * item.rate - (item.discount || 0));
-    return <tr key={idx}>
+                    const lineTotal = item.total || (item.qty * item.rate - (item.discount || 0));
+                    const methodStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                      ? "Loose Kg"
+                      : (item.sellingMethod || "25kg").toUpperCase();
+                    const qtyStr = (item.sellingMethod === "custom" || item.sellingMethod === "1kg")
+                      ? `${item.qty} Kg`
+                      : `${item.qty} Bag`;
+
+                    return (
+                      <tr key={idx}>
                         <td className="p-2.5 text-center text-slate-400">{idx + 1}</td>
                         <td className="p-2.5 font-bold">
-                          {language === "English" ? item.englishName : item.tamilName || item.englishName}
+                          {getItemName(item)}
                         </td>
-                        <td className="p-2.5 text-center font-mono">{item.sellingMethod || "25kg"}</td>
-                        <td className="p-2.5 text-right font-bold">{item.qty}</td>
-                        <td className="p-2.5 text-right">{item.rate}</td>
-                        <td className="p-2.5 text-right font-bold text-slate-900">{lineTotal}</td>
-                      </tr>;
-  })}
+                        <td className="p-2.5 text-center font-mono">{methodStr}</td>
+                        <td className="p-2.5 text-right font-bold">{qtyStr}</td>
+                        <td className="p-2.5 text-right">₹{item.rate}</td>
+                        <td className="p-2.5 text-right font-bold text-slate-900">₹{lineTotal}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
@@ -392,15 +485,34 @@ const ReceiptPrint = ({ bill, onClose, companySettings }) => {
                       <span>- {fmt(bill.discount)}</span>
                     </div>}
                   <div className="flex justify-between text-sm font-black text-blue-600 pt-2 border-t border-dashed border-slate-200">
-                    <span>INVOICE TOTAL:</span>
+                    <span>{language === "Both" || language === "Dual" ? "TOTAL AMOUNT / மொத்தத் தொகை:" : language === "Tamil" ? "மொத்தத் தொகை:" : "TOTAL AMOUNT:"}</span>
                     <span>{fmt(bill.total)}</span>
                   </div>
-                  {bill.balance > 0 && (
-                    <div className="flex justify-between text-rose-600 font-bold">
-                      <span>Outstanding Balance:</span>
-                      <span>{fmt(bill.balance)}</span>
+                  <div className="flex justify-between text-slate-800 font-bold">
+                    <span>{language === "Both" || language === "Dual" ? "PAID AMOUNT / செலுத்திய தொகை:" : language === "Tamil" ? "செலுத்திய தொகை:" : "PAID AMOUNT:"}</span>
+                    <span>{fmt(bill.paidAmount || 0)}</span>
+                  </div>
+                  {bill.paymentType === "Split" && bill.paymentSplit && (
+                    <div className="my-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[11px] space-y-1 text-left font-mono">
+                      <p className="font-bold text-slate-800 text-[10px] uppercase tracking-wider">Split Payment Breakdown:</p>
+                      <div className="text-emerald-700 font-bold flex justify-between">
+                        <span>Cash Paid:</span>
+                        <span>{fmt(bill.paymentSplit.cash || 0)}</span>
+                      </div>
+                      <div className="text-blue-700 font-bold flex justify-between">
+                        <span>Bank/UPI Paid:</span>
+                        <span>{fmt((bill.paymentSplit.bank || 0) + (bill.paymentSplit.upi || 0) + (bill.paymentSplit.card || 0))}</span>
+                      </div>
+                      <div className="text-rose-700 font-bold flex justify-between">
+                        <span>Balance Due / Credit:</span>
+                        <span>{fmt(bill.balance || 0)}</span>
+                      </div>
                     </div>
                   )}
+                  <div className={`flex justify-between ${bill.balance > 0 ? "text-rose-600 font-bold" : "text-slate-700"}`}>
+                    <span>{language === "Both" || language === "Dual" ? "BALANCE DUE / CREDIT / நிலுவைத் தொகை:" : language === "Tamil" ? "நிலுவைத் தொகை:" : "BALANCE DUE / CREDIT:"}</span>
+                    <span>{fmt(bill.balance || 0)}</span>
+                  </div>
                 </div>
 
               </div>
